@@ -21,11 +21,17 @@ namespace LoadUserAccount {
   }
 }
 
+class AuthenticationError extends Error {
+  constructor () {
+    super('Invalid email or password')
+    this.name = 'AuthenticationError'
+  }
+}
+
 const setupAuthentication: Setup = (userAccountRepo, hashComparer) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
-  if (userAccount != null) {
-    await hashComparer.compare(password, userAccount.password)
-  }
+  if (userAccount === undefined) throw new AuthenticationError()
+  await hashComparer.compare(password, userAccount.password)
 }
 
 describe('Authentication', () => {
@@ -51,11 +57,19 @@ describe('Authentication', () => {
     sut = setupAuthentication(userAccountRepo, hashComparer)
   })
 
-  test('should call LoadUser with correct input', async () => {
+  test('should call LoadUserAccount with correct input', async () => {
     await sut({ email, password })
 
     expect(userAccountRepo.load).toHaveBeenCalledWith({ email })
     expect(userAccountRepo.load).toHaveBeenCalledTimes(1)
+  })
+
+  test('should throw an AuthenticationError if user was not found', async () => {
+    userAccountRepo.load.mockResolvedValueOnce(undefined)
+
+    const promise = sut({ email, password })
+
+    await expect(promise).rejects.toThrow(new Error('Invalid email or password'))
   })
 
   test('should call HashComparer with correct input', async () => {
