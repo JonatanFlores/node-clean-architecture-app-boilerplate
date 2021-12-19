@@ -7,14 +7,16 @@ import { mock, MockProxy } from 'jest-mock-extended'
 
 type Setup = (userAccountRepo: LoadUserAccount, hashComparer: HashComparer, token: TokenGenerator) => Authentication
 type Input = { email: string, password: string }
-type Authentication = (input: Input) => Promise<void>
+type Output = { accessToken: string }
+type Authentication = (input: Input) => Promise<Output>
 
 const setupAuthentication: Setup = (userAccountRepo, hashComparer, token) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
   if (userAccount === undefined) throw new AuthenticationError()
   const isValid = await hashComparer.compare(password, userAccount.password)
   if (!isValid) throw new AuthenticationError()
-  await token.generate({ key: userAccount.id, expirationInMs: AccessToken.expirationInMs })
+  const accessToken = await token.generate({ key: userAccount.id, expirationInMs: AccessToken.expirationInMs })
+  return { accessToken }
 }
 
 describe('Authentication', () => {
@@ -37,6 +39,7 @@ describe('Authentication', () => {
     hashComparer = mock()
     hashComparer.compare.mockResolvedValue(true)
     token = mock()
+    token.generate.mockResolvedValue('any_generated_access_token')
   })
 
   beforeEach(() => {
@@ -80,5 +83,11 @@ describe('Authentication', () => {
 
     expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: twoHoursInMs })
     expect(token.generate).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return an access token on success', async () => {
+    const result = await sut({ email, password })
+
+    expect(result).toEqual({ accessToken: 'any_generated_access_token' })
   })
 })
