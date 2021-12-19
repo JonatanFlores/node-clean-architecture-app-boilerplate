@@ -1,32 +1,12 @@
+import { LoadUserAccount } from '@/domain/repos/mongo'
+import { HashComparer } from '@/domain/gateways'
+import { AuthenticationError } from '@/domain/errors'
+
 import { mock, MockProxy } from 'jest-mock-extended'
 
 type Setup = (userAccountRepo: LoadUserAccount, hashComparer: HashComparer) => Authentication
 type Input = { email: string, password: string }
 type Authentication = (input: Input) => Promise<void>
-
-interface LoadUserAccount {
-  load: (input: LoadUserAccount.Input) => Promise<LoadUserAccount.Output>
-}
-
-interface HashComparer {
-  compare: (plaintext: string, digest: string) => Promise<boolean>
-}
-
-namespace LoadUserAccount {
-  export type Input = { email: string }
-  export type Output = undefined | {
-    id: string
-    email: string
-    password: string
-  }
-}
-
-class AuthenticationError extends Error {
-  constructor () {
-    super('Invalid email or password')
-    this.name = 'AuthenticationError'
-  }
-}
 
 const setupAuthentication: Setup = (userAccountRepo, hashComparer) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
