@@ -9,7 +9,7 @@ interface LoadUserAccount {
 }
 
 interface HashComparer {
-  compare: (plaintext: string, digest: string) => Promise<void>
+  compare: (plaintext: string, digest: string) => Promise<boolean>
 }
 
 namespace LoadUserAccount {
@@ -31,7 +31,8 @@ class AuthenticationError extends Error {
 const setupAuthentication: Setup = (userAccountRepo, hashComparer) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
   if (userAccount === undefined) throw new AuthenticationError()
-  await hashComparer.compare(password, userAccount.password)
+  const isValid = await hashComparer.compare(password, userAccount.password)
+  if (!isValid) throw new AuthenticationError()
 }
 
 describe('Authentication', () => {
@@ -51,6 +52,7 @@ describe('Authentication', () => {
       password: 'any_hashed_password'
     })
     hashComparer = mock()
+    hashComparer.compare.mockResolvedValue(true)
   })
 
   beforeEach(() => {
@@ -64,7 +66,7 @@ describe('Authentication', () => {
     expect(userAccountRepo.load).toHaveBeenCalledTimes(1)
   })
 
-  test('should throw an AuthenticationError if user was not found', async () => {
+  test('should throw an AuthenticationError if LoadUserAccount returns undefined', async () => {
     userAccountRepo.load.mockResolvedValueOnce(undefined)
 
     const promise = sut({ email, password })
@@ -77,5 +79,13 @@ describe('Authentication', () => {
 
     expect(hashComparer.compare).toHaveBeenCalledWith(password, 'any_hashed_password')
     expect(hashComparer.compare).toHaveBeenCalledTimes(1)
+  })
+
+  test('should throw an AuthenticationError if HashComparer returns false', async () => {
+    hashComparer.compare.mockResolvedValueOnce(false)
+
+    const promise = sut({ email, password })
+
+    await expect(promise).rejects.toThrow(new Error('Invalid email or password'))
   })
 })
