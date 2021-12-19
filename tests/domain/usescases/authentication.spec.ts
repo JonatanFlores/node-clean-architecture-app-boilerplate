@@ -1,18 +1,20 @@
 import { LoadUserAccount } from '@/domain/repos/mongo'
-import { HashComparer } from '@/domain/gateways'
+import { HashComparer, TokenGenerator } from '@/domain/gateways'
+import { AccessToken } from '@/domain/entities'
 import { AuthenticationError } from '@/domain/errors'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 
-type Setup = (userAccountRepo: LoadUserAccount, hashComparer: HashComparer) => Authentication
+type Setup = (userAccountRepo: LoadUserAccount, hashComparer: HashComparer, token: TokenGenerator) => Authentication
 type Input = { email: string, password: string }
 type Authentication = (input: Input) => Promise<void>
 
-const setupAuthentication: Setup = (userAccountRepo, hashComparer) => async ({ email, password }) => {
+const setupAuthentication: Setup = (userAccountRepo, hashComparer, token) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
   if (userAccount === undefined) throw new AuthenticationError()
   const isValid = await hashComparer.compare(password, userAccount.password)
   if (!isValid) throw new AuthenticationError()
+  await token.generate({ key: userAccount.id, expirationInMs: AccessToken.expirationInMs })
 }
 
 describe('Authentication', () => {
@@ -20,6 +22,7 @@ describe('Authentication', () => {
   let password: string
   let userAccountRepo: MockProxy<LoadUserAccount>
   let hashComparer: MockProxy<HashComparer>
+  let token: MockProxy<TokenGenerator>
   let sut: Authentication
 
   beforeAll(() => {
@@ -33,10 +36,11 @@ describe('Authentication', () => {
     })
     hashComparer = mock()
     hashComparer.compare.mockResolvedValue(true)
+    token = mock()
   })
 
   beforeEach(() => {
-    sut = setupAuthentication(userAccountRepo, hashComparer)
+    sut = setupAuthentication(userAccountRepo, hashComparer, token)
   })
 
   test('should call LoadUserAccount with correct input', async () => {
@@ -67,5 +71,14 @@ describe('Authentication', () => {
     const promise = sut({ email, password })
 
     await expect(promise).rejects.toThrow(new Error('Invalid email or password'))
+  })
+
+  test('should call TokenGenerator with correct input', async () => {
+    const twoHoursInMs = 2 * 60 * 60 * 1000
+
+    await sut({ email, password })
+
+    expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: twoHoursInMs })
+    expect(token.generate).toHaveBeenCalledTimes(1)
   })
 })
