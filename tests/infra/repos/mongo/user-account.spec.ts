@@ -40,5 +40,11 @@ describe('UserAccount', () => {
       const account = await sut.load({ email: accountData.email })
       expect(account).toMatchObject(accountData)
     })
+
+    test('should return undefined if email does not exists', async () => {
+      const account = await sut.load({ email: 'any_email' })
+
+      expect(account).toBeUndefined()
+    })
   })
 })
