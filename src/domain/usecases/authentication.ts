@@ -1,7 +1,7 @@
 import { LoadUserAccount } from '@/domain/contracts/repos/mongo'
 import { HashComparer, TokenGenerator } from '@/domain/contracts/gateways'
 import { AccessToken } from '@/domain/entities'
-import { AuthenticationError } from '@/domain/errors'
+import { AuthenticationError } from '@/domain/entities/errors'
 
 type Setup = (userAccountRepo: LoadUserAccount, hashComparer: HashComparer, token: TokenGenerator) => Authentication
 type Input = { email: string, password: string }
