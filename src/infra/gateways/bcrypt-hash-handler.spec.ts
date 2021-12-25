@@ -45,5 +45,14 @@ describe('BcryptHashHandler', () => {
 
       expect(result).toBe(false)
     })
+
+    test('should throw if compare throws', async () => {
+      const error = new Error('compare_error')
+      fakeBcrypt.compare.mockImplementationOnce(() => { throw error })
+
+      const promise = sut.compare('any_value', 'invalid_hashed_value')
+
+      await expect(promise).rejects.toThrow(error)
+    })
   })
 })
