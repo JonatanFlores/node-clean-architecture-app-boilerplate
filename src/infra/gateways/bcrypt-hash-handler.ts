@@ -1,4 +1,4 @@
-import { HashComparer } from '@/domain/gateways'
+import { HashComparer } from '@/domain/contracts/gateways'
 
 import bcrypt from 'bcrypt'
 

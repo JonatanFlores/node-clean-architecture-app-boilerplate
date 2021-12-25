@@ -1,6 +1,6 @@
 import { Authentication, setupAuthentication } from '@/domain/usecases'
-import { LoadUserAccount } from '@/domain/repos/mongo'
-import { HashComparer, TokenGenerator } from '@/domain/gateways'
+import { LoadUserAccount } from '@/domain/contracts/repos/mongo'
+import { HashComparer, TokenGenerator } from '@/domain/contracts/gateways'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 

@@ -1,5 +1,5 @@
 import { MongoHelper } from '@/infra/repos/mongo'
-import { LoadUserAccount } from '@/domain/repos/mongo'
+import { LoadUserAccount } from '@/domain/contracts/repos/mongo'
 
 export class MongoUserAccount implements LoadUserAccount {
   async load ({ email }: LoadUserAccount.Input): Promise<LoadUserAccount.Output> {
