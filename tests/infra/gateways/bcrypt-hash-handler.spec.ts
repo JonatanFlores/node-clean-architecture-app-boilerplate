@@ -17,19 +17,24 @@ describe('BcryptHashHandler', () => {
   })
 
   describe('compare', () => {
+    let plaintext: string
+    let digest: string
+
     beforeAll(() => {
+      plaintext = 'any_value'
+      digest = 'any_hashed_value'
       fakeBcrypt.compare.mockImplementation(() => true)
     })
 
     test('should call compare with correct values', async () => {
-      await sut.compare('any_value', 'any_hashed_value')
+      await sut.compare({ plaintext, digest })
 
-      expect(fakeBcrypt.compare).toHaveBeenCalledWith('any_value', 'any_hashed_value')
+      expect(fakeBcrypt.compare).toHaveBeenCalledWith(plaintext, digest)
       expect(fakeBcrypt.compare).toHaveBeenCalledTimes(1)
     })
 
     test('should return true when hash verification succeds', async () => {
-      const result = await sut.compare('any_value', 'any_hashed_value')
+      const result = await sut.compare({ plaintext, digest })
 
       expect(result).toBe(true)
     })
@@ -37,7 +42,7 @@ describe('BcryptHashHandler', () => {
     test('should return false when hash verification fails', async () => {
       fakeBcrypt.compare.mockImplementationOnce(() => false)
 
-      const result = await sut.compare('any_value', 'invalid_hashed_value')
+      const result = await sut.compare({ plaintext, digest })
 
       expect(result).toBe(false)
     })
@@ -46,7 +51,7 @@ describe('BcryptHashHandler', () => {
       const error = new Error('compare_error')
       fakeBcrypt.compare.mockImplementationOnce(() => { throw error })
 
-      const promise = sut.compare('any_value', 'invalid_hashed_value')
+      const promise = sut.compare({ plaintext, digest })
 
       await expect(promise).rejects.toThrow(error)
     })

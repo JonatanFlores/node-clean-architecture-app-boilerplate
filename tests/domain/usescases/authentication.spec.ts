@@ -49,7 +49,7 @@ describe('Authentication', () => {
   test('should call HashComparer with correct input', async () => {
     await sut({ email, password })
 
-    expect(hashComparer.compare).toHaveBeenCalledWith(password, 'any_hashed_password')
+    expect(hashComparer.compare).toHaveBeenCalledWith({ plaintext: password, digest: 'any_hashed_password' })
     expect(hashComparer.compare).toHaveBeenCalledTimes(1)
   })
 
