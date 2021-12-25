@@ -35,4 +35,15 @@ describe('LoginController', () => {
       data: new Error('The email field is required')
     })
   })
+
+  test('should return 400 if email is undefined', async () => {
+    const sut = new LoginController()
+
+    const httpResponse = await sut.handle({ email: undefined })
+
+    expect(httpResponse).toEqual({
+      statusCode: 400,
+      data: new Error('The email field is required')
+    })
+  })
 })
