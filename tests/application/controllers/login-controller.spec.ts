@@ -16,7 +16,7 @@ export class LoginController {
       return ok(accessToken)
     } catch (error) {
       if (error instanceof AuthenticationError) return unauthorized()
-      throw error
+      return serverError(error)
     }
   }
 }
@@ -24,6 +24,14 @@ export class LoginController {
 export type HttpResponse<T = any> = {
   statusCode: number
   data: T
+}
+
+export class ServerError extends Error {
+  constructor (error?: Error) {
+    super('Server failed. Try again soon')
+    this.name = 'ServerError'
+    this.stack = error?.stack
+  }
 }
 
 export class UnauthorizedError extends Error {
@@ -46,6 +54,11 @@ export const badRequest = (error: Error): HttpResponse<Error> => ({
 export const unauthorized = (): HttpResponse<Error> => ({
   statusCode: 401,
   data: new UnauthorizedError()
+})
+
+export const serverError = (error: unknown): HttpResponse<Error> => ({
+  statusCode: 500,
+  data: new ServerError(error instanceof Error ? error : undefined)
 })
 
 describe('LoginController', () => {
@@ -130,6 +143,18 @@ describe('LoginController', () => {
     expect(httpResponse).toEqual({
       statusCode: 401,
       data: new UnauthorizedError()
+    })
+  })
+
+  test('should return 500 on infra error', async () => {
+    const error = new Error('infra_error')
+    authentication.mockRejectedValueOnce(error)
+
+    const httpResponse = await sut.handle({ email: 'any@mail.com', password: 'any_password' })
+
+    expect(httpResponse).toEqual({
+      statusCode: 500,
+      data: new ServerError(error)
     })
   })
 
