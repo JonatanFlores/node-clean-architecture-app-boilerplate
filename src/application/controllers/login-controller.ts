@@ -9,11 +9,9 @@ export class LoginController {
   constructor (private readonly authentication: Authentication) {}
 
   async handle ({ email, password }: HttpRequest): Promise<HttpResponse<Model>> {
-    if (email === '' || email === null || email === undefined) {
-      return badRequest(new Error('The email field is required'))
-    }
-    if (password === '' || password === null || password === undefined) {
-      return badRequest(new Error('The password field is required'))
+    const error = this.validate({ email, password })
+    if (error !== undefined) {
+      return badRequest(error)
     }
     try {
       const accessToken = await this.authentication({ email, password })
@@ -21,6 +19,15 @@ export class LoginController {
     } catch (error) {
       if (error instanceof AuthenticationError) return unauthorized()
       return serverError(error)
+    }
+  }
+
+  private validate ({ email, password }: HttpRequest): Error | undefined {
+    if (email === '' || email === null || email === undefined) {
+      return new Error('The email field is required')
+    }
+    if (password === '' || password === null || password === undefined) {
+      return new Error('The password field is required')
     }
   }
 }
