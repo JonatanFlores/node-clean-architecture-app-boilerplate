@@ -37,5 +37,13 @@ describe('BcryptHashHandler', () => {
 
       expect(result).toBe(true)
     })
+
+    test('should return false when hash verification fails', async () => {
+      fakeBcrypt.compare.mockImplementationOnce(() => false)
+
+      const result = await sut.compare('any_value', 'invalid_hashed_value')
+
+      expect(result).toBe(false)
+    })
   })
 })
