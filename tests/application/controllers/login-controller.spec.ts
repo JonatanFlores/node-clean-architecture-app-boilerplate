@@ -26,10 +26,18 @@ type HttpResponse = undefined | {
 }
 
 describe('LoginController', () => {
-  test('should return 400 if email is empty', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
+  let authentication: jest.Mock
+  let sut: LoginController
 
+  beforeAll(() => {
+    authentication = jest.fn()
+  })
+
+  beforeEach(() => {
+    sut = new LoginController(authentication)
+  })
+
+  test('should return 400 if email is empty', async () => {
     const httpResponse = await sut.handle({ email: '' })
 
     expect(httpResponse).toEqual({
@@ -39,9 +47,6 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if email is null', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
-
     const httpResponse = await sut.handle({ email: null })
 
     expect(httpResponse).toEqual({
@@ -51,9 +56,6 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if email is undefined', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
-
     const httpResponse = await sut.handle({ email: undefined })
 
     expect(httpResponse).toEqual({
@@ -63,9 +65,6 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if password is empty', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
-
     const httpResponse = await sut.handle({ email: 'any@mail.com', password: '' })
 
     expect(httpResponse).toEqual({
@@ -75,9 +74,6 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if password is null', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
-
     const httpResponse = await sut.handle({ email: 'any@mail.com', password: null })
 
     expect(httpResponse).toEqual({
@@ -87,9 +83,6 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if password is undefined', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
-
     const httpResponse = await sut.handle({ email: 'any@mail.com', password: undefined })
 
     expect(httpResponse).toEqual({
@@ -99,9 +92,6 @@ describe('LoginController', () => {
   })
 
   test('should call Authentication with correct input', async () => {
-    const authentication = jest.fn()
-    const sut = new LoginController(authentication)
-
     await sut.handle({ email: 'any@mail.com', password: 'any_password' })
 
     expect(authentication).toHaveBeenCalledWith({ email: 'any@mail.com', password: 'any_password' })
