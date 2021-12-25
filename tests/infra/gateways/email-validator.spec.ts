@@ -35,4 +35,12 @@ describe('EmailValidator', () => {
 
     expect(result).toBe(true)
   })
+
+  test('should return false if validator returns false', () => {
+    fakeValidator.isEmail.mockImplementation(() => false)
+
+    const result = sut.isValid(email)
+
+    expect(result).toBe(false)
+  })
 })
