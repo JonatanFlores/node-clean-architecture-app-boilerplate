@@ -1,65 +1,6 @@
+import { LoginController } from '@/application/controllers'
+import { UnauthorizedError, ServerError } from '@/application/errors'
 import { AuthenticationError } from '@/domain/entities/errors'
-import { Authentication } from '@/domain/usecases'
-
-export class LoginController {
-  constructor (private readonly authentication: Authentication) {}
-
-  async handle ({ email, password }: any): Promise<HttpResponse> {
-    if (email === '' || email === null || email === undefined) {
-      return badRequest(new Error('The email field is required'))
-    }
-    if (password === '' || password === null || password === undefined) {
-      return badRequest(new Error('The password field is required'))
-    }
-    try {
-      const accessToken = await this.authentication({ email, password })
-      return ok(accessToken)
-    } catch (error) {
-      if (error instanceof AuthenticationError) return unauthorized()
-      return serverError(error)
-    }
-  }
-}
-
-export type HttpResponse<T = any> = {
-  statusCode: number
-  data: T
-}
-
-export class ServerError extends Error {
-  constructor (error?: Error) {
-    super('Server failed. Try again soon')
-    this.name = 'ServerError'
-    this.stack = error?.stack
-  }
-}
-
-export class UnauthorizedError extends Error {
-  constructor () {
-    super('Unauthorized')
-    this.name = 'UnauthorizedError'
-  }
-}
-
-export const ok = <T = any> (data: T): HttpResponse<T> => ({
-  statusCode: 200,
-  data
-})
-
-export const badRequest = (error: Error): HttpResponse<Error> => ({
-  statusCode: 400,
-  data: error
-})
-
-export const unauthorized = (): HttpResponse<Error> => ({
-  statusCode: 401,
-  data: new UnauthorizedError()
-})
-
-export const serverError = (error: unknown): HttpResponse<Error> => ({
-  statusCode: 500,
-  data: new ServerError(error instanceof Error ? error : undefined)
-})
 
 describe('LoginController', () => {
   let authentication: jest.Mock
@@ -75,7 +16,7 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if email is empty', async () => {
-    const httpResponse = await sut.handle({ email: '' })
+    const httpResponse = await sut.handle({ email: '', password: 'any_password' })
 
     expect(httpResponse).toEqual({
       statusCode: 400,
@@ -84,7 +25,7 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if email is null', async () => {
-    const httpResponse = await sut.handle({ email: null })
+    const httpResponse = await sut.handle({ email: null as any, password: 'any_password' })
 
     expect(httpResponse).toEqual({
       statusCode: 400,
@@ -93,7 +34,7 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if email is undefined', async () => {
-    const httpResponse = await sut.handle({ email: undefined })
+    const httpResponse = await sut.handle({ email: undefined as any, password: 'any_password' })
 
     expect(httpResponse).toEqual({
       statusCode: 400,
@@ -111,7 +52,7 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if password is null', async () => {
-    const httpResponse = await sut.handle({ email: 'any@mail.com', password: null })
+    const httpResponse = await sut.handle({ email: 'any@mail.com', password: null as any })
 
     expect(httpResponse).toEqual({
       statusCode: 400,
@@ -120,7 +61,7 @@ describe('LoginController', () => {
   })
 
   test('should return 400 if password is undefined', async () => {
-    const httpResponse = await sut.handle({ email: 'any@mail.com', password: undefined })
+    const httpResponse = await sut.handle({ email: 'any@mail.com', password: undefined as any })
 
     expect(httpResponse).toEqual({
       statusCode: 400,
