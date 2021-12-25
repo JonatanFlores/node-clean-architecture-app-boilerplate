@@ -1,11 +1,11 @@
 import { LoginController } from '@/application/controllers'
 import { UnauthorizedError, ServerError } from '@/application/errors'
 import { AuthenticationError } from '@/domain/entities/errors'
-import { RequiredStringValidator } from '@/application/validation'
+import { RequiredStringValidator, ValidationComposite } from '@/application/validation'
 
 import { mocked } from 'ts-jest/utils'
 
-jest.mock('@/application/validation/required-string')
+jest.mock('@/application/validation/composite')
 
 describe('LoginController', () => {
   let email: string
@@ -28,14 +28,17 @@ describe('LoginController', () => {
 
   test('should return 400 if validation fails', async () => {
     const error = new Error('validation_error')
-    const RequiredStringValidatorSpy = jest.fn().mockImplementationOnce(() => ({
+    const ValidationCompositeSpy = jest.fn().mockImplementationOnce(() => ({
       validate: jest.fn().mockReturnValueOnce(error)
     }))
-    mocked(RequiredStringValidator).mockImplementationOnce(RequiredStringValidatorSpy)
+    mocked(ValidationComposite).mockImplementationOnce(ValidationCompositeSpy)
 
     const httpResponse = await sut.handle({ email, password })
 
-    expect(RequiredStringValidator).toHaveBeenCalledWith(email, 'email')
+    expect(ValidationCompositeSpy).toHaveBeenCalledWith([
+      new RequiredStringValidator(email, 'email'),
+      new RequiredStringValidator(password, 'password')
+    ])
     expect(httpResponse).toEqual({
       statusCode: 400,
       data: error
