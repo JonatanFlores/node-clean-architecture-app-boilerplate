@@ -1,7 +1,7 @@
 import { HttpResponse, badRequest, ok, unauthorized, serverError } from '@/application/helpers'
 import { AuthenticationError } from '@/domain/entities/errors'
 import { Authentication } from '@/domain/usecases'
-import { RequiredStringValidator, ValidationComposite } from '@/application/validation'
+import { ValidationBuilder, ValidationComposite } from '@/application/validation'
 
 type HttpRequest = { email: string, password: string }
 type Model = Error | { accessToken: string }
@@ -25,8 +25,8 @@ export class LoginController {
 
   private validate ({ email, password }: HttpRequest): Error | undefined {
     return new ValidationComposite([
-      new RequiredStringValidator(email, 'email'),
-      new RequiredStringValidator(password, 'password')
+      ...ValidationBuilder.of({ value: email, fieldName: 'email' }).required().build(),
+      ...ValidationBuilder.of({ value: password, fieldName: 'password' }).required().build()
     ]).validate()
   }
 }
