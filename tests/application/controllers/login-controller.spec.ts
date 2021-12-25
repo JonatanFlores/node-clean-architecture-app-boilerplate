@@ -1,6 +1,7 @@
+import { AuthenticationError } from '@/domain/entities/errors'
 import { Authentication } from '@/domain/usecases'
 
-class LoginController {
+export class LoginController {
   constructor (private readonly authentication: Authentication) {}
 
   async handle ({ email, password }: any): Promise<HttpResponse> {
@@ -16,11 +17,15 @@ class LoginController {
         data: new Error('The password field is required')
       }
     }
-    await this.authentication({ email, password })
+    const result = await this.authentication({ email, password })
+    return {
+      statusCode: 401,
+      data: result
+    }
   }
 }
 
-type HttpResponse = undefined | {
+export type HttpResponse = undefined | {
   statusCode: number
   data: any
 }
@@ -96,5 +101,16 @@ describe('LoginController', () => {
 
     expect(authentication).toHaveBeenCalledWith({ email: 'any@mail.com', password: 'any_password' })
     expect(authentication).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return 401 if authentication fails', async () => {
+    authentication.mockResolvedValueOnce(new AuthenticationError())
+
+    const httpResponse = await sut.handle({ email: 'any@mail.com', password: 'any_password' })
+
+    expect(httpResponse).toEqual({
+      statusCode: 401,
+      data: new AuthenticationError()
+    })
   })
 })
