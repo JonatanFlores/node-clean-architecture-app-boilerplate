@@ -6,29 +6,47 @@ export class LoginController {
 
   async handle ({ email, password }: any): Promise<HttpResponse> {
     if (email === '' || email === null || email === undefined) {
-      return {
-        statusCode: 400,
-        data: new Error('The email field is required')
-      }
+      return badRequest(new Error('The email field is required'))
     }
     if (password === '' || password === null || password === undefined) {
-      return {
-        statusCode: 400,
-        data: new Error('The password field is required')
-      }
+      return badRequest(new Error('The password field is required'))
     }
-    const result = await this.authentication({ email, password })
-    return {
-      statusCode: 401,
-      data: result
+    try {
+      const accessToken = await this.authentication({ email, password })
+      return ok(accessToken)
+    } catch (error) {
+      if (error instanceof AuthenticationError) return unauthorized()
+      throw error
     }
   }
 }
 
-export type HttpResponse = undefined | {
+export type HttpResponse<T = any> = {
   statusCode: number
-  data: any
+  data: T
 }
+
+export class UnauthorizedError extends Error {
+  constructor () {
+    super('Unauthorized')
+    this.name = 'UnauthorizedError'
+  }
+}
+
+export const ok = <T = any> (data: T): HttpResponse<T> => ({
+  statusCode: 200,
+  data
+})
+
+export const badRequest = (error: Error): HttpResponse<Error> => ({
+  statusCode: 400,
+  data: error
+})
+
+export const unauthorized = (): HttpResponse<Error> => ({
+  statusCode: 401,
+  data: new UnauthorizedError()
+})
 
 describe('LoginController', () => {
   let authentication: jest.Mock
@@ -36,6 +54,7 @@ describe('LoginController', () => {
 
   beforeAll(() => {
     authentication = jest.fn()
+    authentication.mockResolvedValue({ accessToken: 'any_value' })
   })
 
   beforeEach(() => {
@@ -104,13 +123,22 @@ describe('LoginController', () => {
   })
 
   test('should return 401 if authentication fails', async () => {
-    authentication.mockResolvedValueOnce(new AuthenticationError())
+    authentication.mockRejectedValueOnce(new AuthenticationError())
 
     const httpResponse = await sut.handle({ email: 'any@mail.com', password: 'any_password' })
 
     expect(httpResponse).toEqual({
       statusCode: 401,
-      data: new AuthenticationError()
+      data: new UnauthorizedError()
+    })
+  })
+
+  test('should return 200 if authentication succeeds', async () => {
+    const httpResponse = await sut.handle({ email: 'any@mail.com', password: 'any_password' })
+
+    expect(httpResponse).toEqual({
+      statusCode: 200,
+      data: { accessToken: 'any_value' }
     })
   })
 })
