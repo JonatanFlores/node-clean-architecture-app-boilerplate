@@ -3,8 +3,8 @@ import bcrypt from 'bcrypt'
 jest.mock('bcrypt')
 
 class BcryptHashHandler {
-  async compare (plaintext: string, digest: string): Promise<void> {
-    await bcrypt.compare(plaintext, digest)
+  async compare (plaintext: string, digest: string): Promise<boolean> {
+    return bcrypt.compare(plaintext, digest)
   }
 }
 
@@ -21,11 +21,21 @@ describe('BcryptHashHandler', () => {
   })
 
   describe('compare', () => {
+    beforeAll(() => {
+      fakeBcrypt.compare.mockImplementation(() => true)
+    })
+
     test('should call compare with correct values', async () => {
       await sut.compare('any_value', 'any_hashed_value')
 
       expect(fakeBcrypt.compare).toHaveBeenCalledWith('any_value', 'any_hashed_value')
       expect(fakeBcrypt.compare).toHaveBeenCalledTimes(1)
+    })
+
+    test('should return true when hash verification succeds', async () => {
+      const result = await sut.compare('any_value', 'any_hashed_value')
+
+      expect(result).toBe(true)
     })
   })
 })
