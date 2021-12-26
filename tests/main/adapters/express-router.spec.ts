@@ -7,7 +7,8 @@ import { mock, MockProxy } from 'jest-mock-extended'
 type Adapter = (controller: Controller) => RequestHandler
 
 const adaptExpressRoute: Adapter = (controller) => async (req, res) => {
-  await controller.handle({ ...req.body })
+  const { data } = await controller.handle({ ...req.body })
+  res.status(200).json(data)
 }
 
 describe('ExpressRouter', () => {
@@ -22,6 +23,10 @@ describe('ExpressRouter', () => {
     res = getMockRes().res
     next = getMockRes().next
     controller = mock()
+    controller.handle.mockResolvedValue({
+      statusCode: 200,
+      data: { data: 'any_data' }
+    })
   })
 
   beforeEach(() => {
@@ -42,5 +47,14 @@ describe('ExpressRouter', () => {
 
     expect(controller.handle).toHaveBeenCalledWith({})
     expect(controller.handle).toHaveBeenCalledTimes(1)
+  })
+
+  test('should respond with 200 and valid data', async () => {
+    await sut(req, res, next)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.status).toHaveBeenCalledTimes(1)
+    expect(res.json).toHaveBeenCalledWith({ data: 'any_data' })
+    expect(res.json).toHaveBeenCalledTimes(1)
   })
 })
