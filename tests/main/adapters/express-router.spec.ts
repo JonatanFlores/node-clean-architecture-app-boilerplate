@@ -1,16 +1,9 @@
+import { adaptExpressRoute } from '@/main/adapters'
 import { Controller } from '@/application/controllers'
 
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { getMockReq, getMockRes } from '@jest-mock/express'
 import { mock, MockProxy } from 'jest-mock-extended'
-
-type Adapter = (controller: Controller) => RequestHandler
-
-const adaptExpressRoute: Adapter = (controller) => async (req, res) => {
-  const { data, statusCode } = await controller.handle({ ...req.body })
-  const json = [200].includes(statusCode) ? data : { error: data.message }
-  res.status(statusCode).json(json)
-}
 
 describe('ExpressRouter', () => {
   let req: Request
