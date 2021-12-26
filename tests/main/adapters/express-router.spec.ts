@@ -7,8 +7,9 @@ import { mock, MockProxy } from 'jest-mock-extended'
 type Adapter = (controller: Controller) => RequestHandler
 
 const adaptExpressRoute: Adapter = (controller) => async (req, res) => {
-  const { data } = await controller.handle({ ...req.body })
-  res.status(200).json(data)
+  const { data, statusCode } = await controller.handle({ ...req.body })
+  const json = [200].includes(statusCode) ? data : { error: data.message }
+  res.status(statusCode).json(json)
 }
 
 describe('ExpressRouter', () => {
@@ -55,6 +56,34 @@ describe('ExpressRouter', () => {
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.status).toHaveBeenCalledTimes(1)
     expect(res.json).toHaveBeenCalledWith({ data: 'any_data' })
+    expect(res.json).toHaveBeenCalledTimes(1)
+  })
+
+  test('should respond with 400 and valid error', async () => {
+    controller.handle.mockResolvedValueOnce({
+      statusCode: 400,
+      data: new Error('any_error')
+    })
+
+    await sut(req, res, next)
+
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.status).toHaveBeenCalledTimes(1)
+    expect(res.json).toHaveBeenCalledWith({ error: 'any_error' })
+    expect(res.json).toHaveBeenCalledTimes(1)
+  })
+
+  test('should respond with 500 and valid error', async () => {
+    controller.handle.mockResolvedValueOnce({
+      statusCode: 500,
+      data: new Error('any_error')
+    })
+
+    await sut(req, res, next)
+
+    expect(res.status).toHaveBeenCalledWith(500)
+    expect(res.status).toHaveBeenCalledTimes(1)
+    expect(res.json).toHaveBeenCalledWith({ error: 'any_error' })
     expect(res.json).toHaveBeenCalledTimes(1)
   })
 })
