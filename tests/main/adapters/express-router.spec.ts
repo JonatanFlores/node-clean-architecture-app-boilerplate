@@ -1,8 +1,8 @@
 import { Controller } from '@/application/controllers'
 
-import { RequestHandler } from 'express'
+import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { getMockReq, getMockRes } from '@jest-mock/express'
-import { mock } from 'jest-mock-extended'
+import { mock, MockProxy } from 'jest-mock-extended'
 
 type Adapter = (controller: Controller) => RequestHandler
 
@@ -11,13 +11,24 @@ const adaptExpressRoute: Adapter = (controller) => async (req, res) => {
 }
 
 describe('ExpressRouter', () => {
-  test('should call handle with correct request', async () => {
-    const req = getMockReq({ body: { anyBody: 'any_body' } })
-    const res = getMockRes().res
-    const next = getMockRes().next
-    const controller = mock<Controller>()
-    const sut = adaptExpressRoute(controller)
+  let req: Request
+  let res: Response
+  let next: NextFunction
+  let controller: MockProxy<Controller>
+  let sut: RequestHandler
 
+  beforeAll(() => {
+    req = getMockReq({ body: { anyBody: 'any_body' } })
+    res = getMockRes().res
+    next = getMockRes().next
+    controller = mock()
+  })
+
+  beforeEach(() => {
+    sut = adaptExpressRoute(controller)
+  })
+
+  test('should call handle with correct request', async () => {
     await sut(req, res, next)
 
     expect(controller.handle).toHaveBeenCalledWith({ anyBody: 'any_body' })
@@ -26,10 +37,6 @@ describe('ExpressRouter', () => {
 
   test('should call handle with empty request', async () => {
     const req = getMockReq()
-    const res = getMockRes().res
-    const next = getMockRes().next
-    const controller = mock<Controller>()
-    const sut = adaptExpressRoute(controller)
 
     await sut(req, res, next)
 
