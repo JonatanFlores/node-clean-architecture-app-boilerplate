@@ -133,4 +133,12 @@ describe('AddUserAccount', () => {
 
     await expect(promise).rejects.toThrow(new Error('hasher_error'))
   })
+
+  test('should rethrow if TokenGenerator throws', async () => {
+    token.generate.mockRejectedValueOnce(new Error('token_generate_error'))
+
+    const promise = sut({ email, password })
+
+    await expect(promise).rejects.toThrow(new Error('token_generate_error'))
+  })
 })
