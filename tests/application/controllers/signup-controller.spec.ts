@@ -1,6 +1,7 @@
 import { Controller } from '@/application/controllers'
-import { RequiredStringValidator, ValidationBuilder as Build, Validator } from '@/application/validation'
 import { HttpResponse, ok } from '@/application/helpers'
+import { ServerError } from '@/application/errors'
+import { RequiredStringValidator, ValidationBuilder as Build, Validator } from '@/application/validation'
 import { AddUserAccount } from '@/domain/usecases'
 
 type HttpRequest = { email: string, password: string }
@@ -65,6 +66,18 @@ describe('SignupController', () => {
     expect(httpResponse).toEqual({
       statusCode: 200,
       data: { accessToken, email }
+    })
+  })
+
+  test('should return 500 on infra error', async () => {
+    const error = new Error('infra_error')
+    addUserAccount.mockRejectedValueOnce(error)
+
+    const httpResponse = await sut.handle({ email, password })
+
+    expect(httpResponse).toEqual({
+      statusCode: 500,
+      data: new ServerError(error)
     })
   })
 })
