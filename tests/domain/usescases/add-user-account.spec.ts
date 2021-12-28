@@ -1,4 +1,5 @@
 import { LoadUserAccount } from '@/domain/contracts/repos/mongo'
+import { EmailAlreadyInUseError } from '@/domain/entities/errors'
 
 import { MockProxy, mock } from 'jest-mock-extended'
 
@@ -24,12 +25,14 @@ type Input = { email: string, password: string }
 export type AddUserAccount = (input: Input) => Promise<void>
 
 export const setupAddUserAccount: Setup = (userAccountRepo, hasher) => async ({ email, password }) => {
-  await userAccountRepo.load({ email })
+  const userAccount = await userAccountRepo.load({ email })
+  if (userAccount !== undefined) throw new EmailAlreadyInUseError()
   const passwordHashed = await hasher.hash({ value: password })
   await userAccountRepo.save({ email, password: passwordHashed })
 }
 
 describe('AddUserAccount', () => {
+  let id: string
   let email: string
   let password: string
   let passwordHashed: string
@@ -38,6 +41,7 @@ describe('AddUserAccount', () => {
   let sut: AddUserAccount
 
   beforeAll(() => {
+    id = 'any_id'
     email = 'any_mail@mail.com'
     password = 'any_password'
     passwordHashed = 'any_hashed_password'
@@ -55,6 +59,14 @@ describe('AddUserAccount', () => {
 
     expect(userAccountRepo.load).toHaveBeenCalledWith({ email })
     expect(userAccountRepo.load).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return EmailAlreadyInUse error if there is an user account with the given email', async () => {
+    userAccountRepo.load.mockResolvedValueOnce({ id, email, password })
+
+    const promise = sut({ email, password })
+
+    await expect(promise).rejects.toThrow(new Error('Email already in use'))
   })
 
   test('should call Hasher with the correct input', async () => {
