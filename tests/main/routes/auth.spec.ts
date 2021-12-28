@@ -55,10 +55,21 @@ describe('Auth Routes', () => {
         .send({ email, password })
 
       const createdAccount = await userCollection.findOne({ email })
-
       expect(status).toBe(200)
       expect(body).toHaveProperty('accessToken')
       expect(body.email).toBe(createdAccount?.email)
+    })
+
+    it('should return 400 with EmailAlreadyInUseError', async () => {
+      const passwordHashed = await hash(password, 12)
+      await userCollection.insertOne({ email, password: passwordHashed })
+
+      const { status, body } = await request(app)
+        .post('/api/signup')
+        .send({ email, password })
+
+      expect(status).toBe(400)
+      expect(body).toEqual({ error: 'Email already in use' })
     })
   })
 })

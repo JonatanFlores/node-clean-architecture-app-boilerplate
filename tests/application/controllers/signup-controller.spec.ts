@@ -1,6 +1,7 @@
 import { SignupController } from '@/application/controllers'
 import { ServerError } from '@/application/errors'
 import { RequiredStringValidator } from '@/application/validation'
+import { EmailAlreadyInUseError } from '@/domain/entities/errors'
 
 describe('SignupController', () => {
   let email: string
@@ -35,6 +36,17 @@ describe('SignupController', () => {
 
     expect(addUserAccount).toHaveBeenCalledWith({ email, password })
     expect(addUserAccount).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return 400 if AddUserAccount fails', async () => {
+    addUserAccount.mockRejectedValueOnce(new EmailAlreadyInUseError())
+
+    const httpResponse = await sut.handle({ email, password })
+
+    expect(httpResponse).toEqual({
+      statusCode: 400,
+      data: new EmailAlreadyInUseError()
+    })
   })
 
   test('should return 200 if AddUserAccount succeeds', async () => {
