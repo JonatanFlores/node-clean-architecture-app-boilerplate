@@ -1,5 +1,6 @@
 import { LoadUserAccount } from '@/domain/contracts/repos/mongo'
 import { EmailAlreadyInUseError } from '@/domain/entities/errors'
+import { TokenGenerator } from '@/domain/contracts/gateways'
 
 import { MockProxy, mock } from 'jest-mock-extended'
 
@@ -13,22 +14,25 @@ export namespace Hasher {
 }
 
 export interface SaveUserAccount {
-  save: (input: SaveUserAccount.Input) => Promise<void>
+  save: (input: SaveUserAccount.Input) => Promise<SaveUserAccount.Output>
 }
 
 export namespace SaveUserAccount {
   export type Input = { email: string, password: string }
+  export type Output = { id: string, email: string, password: string }
 }
 
-type Setup = (userAccountRepo: LoadUserAccount & SaveUserAccount, hasher: Hasher) => AddUserAccount
+type Setup = (userAccountRepo: LoadUserAccount & SaveUserAccount, hasher: Hasher, token: TokenGenerator) => AddUserAccount
 type Input = { email: string, password: string }
 export type AddUserAccount = (input: Input) => Promise<void>
 
-export const setupAddUserAccount: Setup = (userAccountRepo, hasher) => async ({ email, password }) => {
+export const setupAddUserAccount: Setup = (userAccountRepo, hasher, token) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
   if (userAccount !== undefined) throw new EmailAlreadyInUseError()
   const passwordHashed = await hasher.hash({ value: password })
-  await userAccountRepo.save({ email, password: passwordHashed })
+  const generatedUserAccount = await userAccountRepo.save({ email, password: passwordHashed })
+  const twoHoursInMs = 2 * 60 * 60 * 1000
+  await token.generate({ key: generatedUserAccount.id, expirationInMs: twoHoursInMs })
 }
 
 describe('AddUserAccount', () => {
@@ -38,6 +42,7 @@ describe('AddUserAccount', () => {
   let passwordHashed: string
   let userAccountRepo: MockProxy<LoadUserAccount & SaveUserAccount>
   let hasher: MockProxy<Hasher>
+  let token: MockProxy<TokenGenerator>
   let sut: AddUserAccount
 
   beforeAll(() => {
@@ -46,12 +51,14 @@ describe('AddUserAccount', () => {
     password = 'any_password'
     passwordHashed = 'any_hashed_password'
     userAccountRepo = mock()
+    userAccountRepo.save.mockResolvedValue({ id, email, password })
     hasher = mock()
     hasher.hash.mockResolvedValue(passwordHashed)
+    token = mock()
   })
 
   beforeEach(() => {
-    sut = setupAddUserAccount(userAccountRepo, hasher)
+    sut = setupAddUserAccount(userAccountRepo, hasher, token)
   })
 
   test('should call LoadUserAccount with the correct input', async () => {
@@ -81,5 +88,14 @@ describe('AddUserAccount', () => {
 
     expect(userAccountRepo.save).toHaveBeenCalledWith({ email, password: passwordHashed })
     expect(userAccountRepo.save).toHaveBeenCalledTimes(1)
+  })
+
+  test('should call TokenGenerator with correct input', async () => {
+    const twoHoursInMs = 2 * 60 * 60 * 1000
+
+    await sut({ email, password })
+
+    expect(token.generate).toHaveBeenCalledWith({ key: id, expirationInMs: twoHoursInMs })
+    expect(token.generate).toHaveBeenCalledTimes(1)
   })
 })
