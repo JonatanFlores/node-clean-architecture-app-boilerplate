@@ -118,6 +118,14 @@ describe('AddUserAccount', () => {
     await expect(promise).rejects.toThrow(new Error('load_user_error'))
   })
 
+  test('should rethrow if SaveUserAccount throws', async () => {
+    userAccountRepo.save.mockRejectedValueOnce(new Error('save_user_error'))
+
+    const promise = sut({ email, password })
+
+    await expect(promise).rejects.toThrow(new Error('save_user_error'))
+  })
+
   test('should rethrow if Hasher throws', async () => {
     hasher.hash.mockRejectedValueOnce(new Error('hasher_error'))
 
