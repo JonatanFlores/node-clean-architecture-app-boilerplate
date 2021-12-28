@@ -9,7 +9,7 @@ export class BcryptHashHandler implements HashComparer {
     return bcrypt.compare(plaintext, digest)
   }
 
-  async hash ({ value }: Hasher.Input): Promise<void> {
-    await bcrypt.hash(value, this.salt)
+  async hash ({ value }: Hasher.Input): Promise<Hasher.Output> {
+    return bcrypt.hash(value, this.salt)
   }
 }
