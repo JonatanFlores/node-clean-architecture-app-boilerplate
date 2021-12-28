@@ -109,4 +109,12 @@ describe('AddUserAccount', () => {
 
     expect(result).toEqual({ email, accessToken })
   })
+
+  test('should rethrow if LoadUserAccount throws', async () => {
+    userAccountRepo.load.mockRejectedValueOnce(new Error('load_user_error'))
+
+    const promise = sut({ email, password })
+
+    await expect(promise).rejects.toThrow(new Error('load_user_error'))
+  })
 })
