@@ -6,9 +6,13 @@ import { Collection } from 'mongodb'
 import { hash } from 'bcrypt'
 
 describe('Auth Routes', () => {
+  let email: string
+  let password: string
   let userCollection: Collection
 
   beforeAll(async () => {
+    email = 'any_email@mail.com'
+    password = '123'
     await MongoHelper.connect(process.env.MONGO_URL as string)
   })
 
@@ -22,14 +26,6 @@ describe('Auth Routes', () => {
   })
 
   describe('POST /api/login', () => {
-    let email: string
-    let password: string
-
-    beforeAll(() => {
-      email = 'any_email@mail.com'
-      password = '123'
-    })
-
     it('should return 200 with AccessToken', async () => {
       const passwordHashed = await hash(password, 12)
       await userCollection.insertOne({ email, password: passwordHashed })
@@ -49,6 +45,20 @@ describe('Auth Routes', () => {
 
       expect(status).toBe(401)
       expect(body).toEqual({ error: 'Unauthorized' })
+    })
+  })
+
+  describe('POST /api/signup', () => {
+    it('should return 200 with AccessToken', async () => {
+      const { status, body } = await request(app)
+        .post('/api/signup')
+        .send({ email, password })
+
+      const createdAccount = await userCollection.findOne({ email })
+
+      expect(status).toBe(200)
+      expect(body).toHaveProperty('accessToken')
+      expect(body.email).toBe(createdAccount?.email)
     })
   })
 })
