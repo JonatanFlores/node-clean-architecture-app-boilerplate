@@ -10,3 +10,12 @@ export namespace LoadUserAccount {
     password: string
   }
 }
+
+export interface SaveUserAccount {
+  save: (input: SaveUserAccount.Input) => Promise<SaveUserAccount.Output>
+}
+
+export namespace SaveUserAccount {
+  export type Input = { email: string, password: string }
+  export type Output = { id: string, email: string, password: string }
+}
