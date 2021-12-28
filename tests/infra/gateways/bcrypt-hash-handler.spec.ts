@@ -5,28 +5,30 @@ import bcrypt from 'bcrypt'
 jest.mock('bcrypt')
 
 describe('BcryptHashHandler', () => {
+  let salt: number
+  let plaintext: string
   let sut: BcryptHashHandler
   let fakeBcrypt: jest.Mocked<typeof bcrypt>
 
   beforeAll(() => {
+    salt = 12
+    plaintext = 'any_value'
     fakeBcrypt = bcrypt as jest.Mocked<typeof bcrypt>
   })
 
   beforeEach(() => {
-    sut = new BcryptHashHandler()
+    sut = new BcryptHashHandler(salt)
   })
 
   describe('compare', () => {
-    let plaintext: string
     let digest: string
 
     beforeAll(() => {
-      plaintext = 'any_value'
       digest = 'any_hashed_value'
       fakeBcrypt.compare.mockImplementation(() => true)
     })
 
-    test('should call compare with correct values', async () => {
+    test('should call compare with correct input', async () => {
       await sut.compare({ plaintext, digest })
 
       expect(fakeBcrypt.compare).toHaveBeenCalledWith(plaintext, digest)
@@ -54,6 +56,15 @@ describe('BcryptHashHandler', () => {
       const promise = sut.compare({ plaintext, digest })
 
       await expect(promise).rejects.toThrow(error)
+    })
+  })
+
+  describe('hash', () => {
+    test('should call hash with correct input', async () => {
+      await sut.hash({ value: plaintext })
+
+      expect(fakeBcrypt.hash).toHaveBeenCalledWith(plaintext, salt)
+      expect(fakeBcrypt.hash).toHaveBeenCalledTimes(1)
     })
   })
 })

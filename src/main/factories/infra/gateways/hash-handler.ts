@@ -1,5 +1,6 @@
 import { BcryptHashHandler } from '@/infra/gateways'
 
 export const makeBcryptHashHandler = (): BcryptHashHandler => {
-  return new BcryptHashHandler()
+  const salt = 12
+  return new BcryptHashHandler(salt)
 }
