@@ -11,27 +11,39 @@ export namespace Hasher {
   export type Output = string
 }
 
-type Setup = (userAccountRepo: LoadUserAccount, hasher: Hasher) => AddUserAccount
+export interface SaveUserAccount {
+  save: (input: SaveUserAccount.Input) => Promise<void>
+}
+
+export namespace SaveUserAccount {
+  export type Input = { email: string, password: string }
+}
+
+type Setup = (userAccountRepo: LoadUserAccount & SaveUserAccount, hasher: Hasher) => AddUserAccount
 type Input = { email: string, password: string }
 export type AddUserAccount = (input: Input) => Promise<void>
 
 export const setupAddUserAccount: Setup = (userAccountRepo, hasher) => async ({ email, password }) => {
   await userAccountRepo.load({ email })
-  await hasher.hash({ value: password })
+  const passwordHashed = await hasher.hash({ value: password })
+  await userAccountRepo.save({ email, password: passwordHashed })
 }
 
 describe('AddUserAccount', () => {
   let email: string
   let password: string
-  let userAccountRepo: MockProxy<LoadUserAccount>
+  let passwordHashed: string
+  let userAccountRepo: MockProxy<LoadUserAccount & SaveUserAccount>
   let hasher: MockProxy<Hasher>
   let sut: AddUserAccount
 
   beforeAll(() => {
     email = 'any_mail@mail.com'
     password = 'any_password'
+    passwordHashed = 'any_hashed_password'
     userAccountRepo = mock()
     hasher = mock()
+    hasher.hash.mockResolvedValue(passwordHashed)
   })
 
   beforeEach(() => {
@@ -50,5 +62,12 @@ describe('AddUserAccount', () => {
 
     expect(hasher.hash).toHaveBeenCalledWith({ value: password })
     expect(hasher.hash).toHaveBeenCalledTimes(1)
+  })
+
+  test('should call SaveUserAccount with the correct input', async () => {
+    await sut({ email, password })
+
+    expect(userAccountRepo.save).toHaveBeenCalledWith({ email, password: passwordHashed })
+    expect(userAccountRepo.save).toHaveBeenCalledTimes(1)
   })
 })
