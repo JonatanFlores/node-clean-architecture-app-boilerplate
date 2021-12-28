@@ -75,5 +75,13 @@ describe('BcryptHashHandler', () => {
 
       expect(result).toEqual(digest)
     })
+
+    test('should rethrow if hash throws', async () => {
+      fakeBcrypt.hash.mockImplementationOnce(() => { throw new Error('hash_error') })
+
+      const promise = sut.hash({ value: plaintext })
+
+      await expect(promise).rejects.toThrow(new Error('hash_error'))
+    })
   })
 })
