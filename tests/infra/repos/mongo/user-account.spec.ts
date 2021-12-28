@@ -35,4 +35,15 @@ describe('UserAccount', () => {
       expect(account).toBeUndefined()
     })
   })
+
+  describe('save', () => {
+    test('should return an account if save succeeds', async () => {
+      const accountData = { email: 'any_email', password: 'any_password' }
+
+      const account = await sut.save({ ...accountData })
+
+      expect(account).toMatchObject({ email: 'any_email' })
+      expect(account.id).toBeDefined()
+    })
+  })
 })
