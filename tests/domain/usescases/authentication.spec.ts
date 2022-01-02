@@ -24,7 +24,7 @@ describe('Authentication', () => {
     hashComparer = mock()
     hashComparer.compare.mockResolvedValue(true)
     token = mock()
-    token.generate.mockResolvedValue('any_generated_access_token')
+    token.generate.mockResolvedValue('any_generated_token')
   })
 
   beforeEach(() => {
@@ -63,16 +63,22 @@ describe('Authentication', () => {
 
   test('should call TokenGenerator with correct input', async () => {
     const twoHoursInMs = 2 * 60 * 60 * 1000
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000
 
     await sut({ email, password })
 
     expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: twoHoursInMs })
-    expect(token.generate).toHaveBeenCalledTimes(1)
+    expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: thirtyDaysInMs })
+    expect(token.generate).toHaveBeenCalledTimes(2)
   })
 
   test('should return an access token on success', async () => {
     const result = await sut({ email, password })
 
-    expect(result).toEqual({ accessToken: 'any_generated_access_token' })
+    expect(result).toEqual({
+      email,
+      accessToken: 'any_generated_token',
+      refreshToken: 'any_generated_token'
+    })
   })
 })

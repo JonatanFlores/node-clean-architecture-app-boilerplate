@@ -9,7 +9,6 @@ describe('AddUserAccount', () => {
   let email: string
   let password: string
   let passwordHashed: string
-  let accessToken: string
   let userAccountRepo: MockProxy<LoadUserAccount & SaveUserAccount>
   let hasher: MockProxy<Hasher>
   let token: MockProxy<TokenGenerator>
@@ -20,13 +19,12 @@ describe('AddUserAccount', () => {
     email = 'any_mail@mail.com'
     password = 'any_password'
     passwordHashed = 'any_hashed_password'
-    accessToken = 'any_access_token'
     userAccountRepo = mock()
     userAccountRepo.save.mockResolvedValue({ id, email, password })
     hasher = mock()
     hasher.hash.mockResolvedValue(passwordHashed)
     token = mock()
-    token.generate.mockResolvedValue(accessToken)
+    token.generate.mockResolvedValue('any_token')
   })
 
   beforeEach(() => {
@@ -64,17 +62,23 @@ describe('AddUserAccount', () => {
 
   test('should call TokenGenerator with correct input', async () => {
     const twoHoursInMs = 2 * 60 * 60 * 1000
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000
 
     await sut({ email, password })
 
-    expect(token.generate).toHaveBeenCalledWith({ key: id, expirationInMs: twoHoursInMs })
-    expect(token.generate).toHaveBeenCalledTimes(1)
+    expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: twoHoursInMs })
+    expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: thirtyDaysInMs })
+    expect(token.generate).toHaveBeenCalledTimes(2)
   })
 
-  test('should return email and accessToken', async () => {
+  test('should return email, accessToken and refreshToken', async () => {
     const result = await sut({ email, password })
 
-    expect(result).toEqual({ email, accessToken })
+    expect(result).toEqual({
+      email,
+      accessToken: 'any_token',
+      refreshToken: 'any_token'
+    })
   })
 
   test('should rethrow if LoadUserAccount throws', async () => {

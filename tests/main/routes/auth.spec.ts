@@ -36,6 +36,8 @@ describe('Auth Routes', () => {
 
       expect(status).toBe(200)
       expect(body).toHaveProperty('accessToken')
+      expect(body).toHaveProperty('refreshToken')
+      expect(body.email).toBe(email)
     })
 
     it('should return 401 with UnauthorizedError', async () => {
@@ -57,6 +59,7 @@ describe('Auth Routes', () => {
       const createdAccount = await userCollection.findOne({ email })
       expect(status).toBe(200)
       expect(body).toHaveProperty('accessToken')
+      expect(body).toHaveProperty('refreshToken')
       expect(body.email).toBe(createdAccount?.email)
     })
 
