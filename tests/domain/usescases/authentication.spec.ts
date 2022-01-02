@@ -72,7 +72,7 @@ describe('Authentication', () => {
     expect(token.generate).toHaveBeenCalledTimes(2)
   })
 
-  test('should return an access token on success', async () => {
+  test('should return an email, access token and refresh token on success', async () => {
     const result = await sut({ email, password })
 
     expect(result).toEqual({

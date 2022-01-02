@@ -6,14 +6,16 @@ import { mock, MockProxy } from 'jest-mock-extended'
 
 type Setup = (token: TokenValidator & TokenGenerator, userRepo: LoadUser) => RefreshTokenType
 type Input = { currentRefreshToken: string }
-export type RefreshTokenType = (input: Input) => Promise<void>
+type Output = { email: string, accessToken: string, refreshToken: string }
+export type RefreshTokenType = (input: Input) => Promise<Output>
 
 const setupRefreshToken: Setup = (token, userRepo) => async ({ currentRefreshToken }) => {
   const userId = await token.validate({ token: currentRefreshToken })
   const user = await userRepo.load({ id: userId })
   if (user === undefined) throw new AuthenticationError()
-  await token.generate({ key: user.id, expirationInMs: AccessToken.expirationInMs })
-  await token.generate({ key: user.id, expirationInMs: RefreshToken.expirationInMs })
+  const accessToken = await token.generate({ key: user.id, expirationInMs: AccessToken.expirationInMs })
+  const refreshToken = await token.generate({ key: user.id, expirationInMs: RefreshToken.expirationInMs })
+  return { email: user.email, accessToken, refreshToken }
 }
 
 interface LoadUser {
@@ -42,6 +44,7 @@ describe('RefreshToken', () => {
     email = 'any_email'
     token = mock()
     token.validate.mockResolvedValue(id)
+    token.generate.mockResolvedValue('any_generated_token')
     userRepo = mock()
     userRepo.load.mockResolvedValue({ id, email })
   })
@@ -73,5 +76,15 @@ describe('RefreshToken', () => {
     expect(token.generate).toHaveBeenCalledWith({ key: id, expirationInMs: twoHoursInMs })
     expect(token.generate).toHaveBeenCalledWith({ key: id, expirationInMs: thirtyDaysInMs })
     expect(token.generate).toHaveBeenCalledTimes(2)
+  })
+
+  test('should return an email, access token and refresh token on success', async () => {
+    const result = await sut({ currentRefreshToken })
+
+    expect(result).toEqual({
+      email,
+      accessToken: 'any_generated_token',
+      refreshToken: 'any_generated_token'
+    })
   })
 })
