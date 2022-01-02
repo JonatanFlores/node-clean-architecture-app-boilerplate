@@ -1,34 +1,8 @@
+import { RefreshTokenType, setupRefreshToken } from '@/domain/usecases'
 import { TokenValidator, TokenGenerator } from '@/domain/contracts/gateways'
-import { AuthenticationError } from '@/domain/entities/errors'
-import { AccessToken, RefreshToken } from '@/domain/entities'
+import { LoadUser } from '@/domain/contracts/repos/mongo'
 
 import { mock, MockProxy } from 'jest-mock-extended'
-
-type Setup = (token: TokenValidator & TokenGenerator, userRepo: LoadUser) => RefreshTokenType
-type Input = { currentRefreshToken: string }
-type Output = { email: string, accessToken: string, refreshToken: string }
-export type RefreshTokenType = (input: Input) => Promise<Output>
-
-const setupRefreshToken: Setup = (token, userRepo) => async ({ currentRefreshToken }) => {
-  const userId = await token.validate({ token: currentRefreshToken })
-  const user = await userRepo.load({ id: userId })
-  if (user === undefined) throw new AuthenticationError()
-  const accessToken = await token.generate({ key: user.id, expirationInMs: AccessToken.expirationInMs })
-  const refreshToken = await token.generate({ key: user.id, expirationInMs: RefreshToken.expirationInMs })
-  return { email: user.email, accessToken, refreshToken }
-}
-
-interface LoadUser {
-  load: (input: LoadUser.Input) => Promise<LoadUser.Output>
-}
-
-export namespace LoadUser {
-  export type Input = { id: string }
-  export type Output = undefined | {
-    id: string
-    email: string
-  }
-}
 
 describe('RefreshToken', () => {
   let currentRefreshToken: string
