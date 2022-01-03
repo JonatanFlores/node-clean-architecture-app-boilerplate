@@ -26,6 +26,7 @@ describe('UserAccount', () => {
       await userCollection.insertOne({ ...accountData })
 
       const account = await sut.load({ email: accountData.email })
+
       expect(account).toMatchObject(accountData)
     })
 
