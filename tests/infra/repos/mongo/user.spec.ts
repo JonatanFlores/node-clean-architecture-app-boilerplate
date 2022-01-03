@@ -1,18 +1,6 @@
-import { LoadUser } from '@/domain/contracts/repos/mongo'
-import { MongoHelper } from '@/infra/repos/mongo'
+import { MongoHelper, MongoUser } from '@/infra/repos/mongo'
 
-import { Collection, ObjectId } from 'mongodb'
-
-class MongoUser implements LoadUser {
-  async load ({ id }: LoadUser.Input): Promise<LoadUser.Output> {
-    const userCollection = MongoHelper.getCollection('users')
-    const user = await userCollection.findOne(
-      { _id: new ObjectId(id) },
-      { projection: { _id: 1, email: 1 } }
-    )
-    if (user !== null) return MongoHelper.map(user)
-  }
-}
+import { Collection } from 'mongodb'
 
 describe('User', () => {
   let sut: MongoUser
