@@ -1,7 +1,7 @@
 import { RefreshTokenController } from '@/application/controllers'
 import { RequiredStringValidator } from '@/application/validation'
 import { UnauthorizedError } from '@/application/errors'
-import { AuthenticationError } from '@/domain/entities/errors'
+import { RefreshTokenError } from '@/domain/entities/errors'
 
 describe('RefreshToken', () => {
   let email: string
@@ -38,7 +38,7 @@ describe('RefreshToken', () => {
   })
 
   test('should return 401 if RefreshToken fails', async () => {
-    refreshTokenUseCase.mockRejectedValueOnce(new AuthenticationError())
+    refreshTokenUseCase.mockRejectedValueOnce(new RefreshTokenError())
 
     const httpResponse = await sut.handle({ refreshToken })
 

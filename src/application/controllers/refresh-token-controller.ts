@@ -2,7 +2,7 @@ import { Controller } from '@/application/controllers'
 import { Validator, ValidationBuilder as Builder } from '@/application/validation'
 import { HttpResponse, ok, unauthorized } from '@/application/helpers'
 import { RefreshTokenType } from '@/domain/usecases'
-import { AuthenticationError } from '@/domain/entities/errors'
+import { RefreshTokenError } from '@/domain/entities/errors'
 
 type HttpRequest = { refreshToken: string }
 type Model = Error | { email: string, accessToken: string, refreshToken: string }
@@ -17,7 +17,7 @@ export class RefreshTokenController extends Controller {
       const result = await this.refreshToken({ currentRefreshToken: refreshToken })
       return ok(result)
     } catch (error) {
-      if (error instanceof AuthenticationError) return unauthorized()
+      if (error instanceof RefreshTokenError) return unauthorized()
       throw error
     }
   }

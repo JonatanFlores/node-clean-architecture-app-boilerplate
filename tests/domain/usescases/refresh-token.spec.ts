@@ -34,11 +34,19 @@ describe('RefreshToken', () => {
     expect(token.validate).toHaveBeenCalledTimes(1)
   })
 
-  test('should call TokenValidator with correct input', async () => {
+  test('should call LoadUser with correct input', async () => {
     await sut({ currentRefreshToken })
 
     expect(userRepo.load).toHaveBeenCalledWith({ id })
     expect(userRepo.load).toHaveBeenCalledTimes(1)
+  })
+
+  test('should throw an AuthenticationError if LoadUser returns undefined', async () => {
+    userRepo.load.mockResolvedValueOnce(undefined)
+
+    const promise = sut({ currentRefreshToken })
+
+    await expect(promise).rejects.toThrow(new Error('Invalid refresh token'))
   })
 
   test('should call TokenGenerator with correct input', async () => {
