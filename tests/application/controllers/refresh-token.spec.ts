@@ -1,31 +1,7 @@
-import { RequiredStringValidator, Validator, ValidationBuilder as Builder } from '@/application/validation'
-import { HttpResponse, ok, unauthorized } from '@/application/helpers'
+import { RefreshTokenController } from '@/application/controllers'
+import { RequiredStringValidator } from '@/application/validation'
 import { UnauthorizedError } from '@/application/errors'
-import { RefreshTokenType } from '@/domain/usecases'
 import { AuthenticationError } from '@/domain/entities/errors'
-
-type HttpRequest = { refreshToken: string }
-type Model = Error | { email: string, accessToken: string, refreshToken: string }
-
-class RefreshTokenController {
-  constructor (private readonly refreshToken: RefreshTokenType) {}
-
-  async handle ({ refreshToken }: HttpRequest): Promise<HttpResponse<Model>> {
-    try {
-      const result = await this.refreshToken({ currentRefreshToken: refreshToken })
-      return ok(result)
-    } catch (error) {
-      if (error instanceof AuthenticationError) return unauthorized()
-      throw error
-    }
-  }
-
-  buildValidators ({ refreshToken }: HttpRequest): Validator[] {
-    return [
-      ...Builder.of({ value: refreshToken, fieldName: 'refreshToken' }).required().build()
-    ]
-  }
-}
 
 describe('RefreshToken', () => {
   let email: string
