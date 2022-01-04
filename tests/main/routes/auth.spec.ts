@@ -75,4 +75,34 @@ describe('Auth Routes', () => {
       expect(body).toEqual({ error: 'Email already in use' })
     })
   })
+
+  describe('POST /api/refresh-token', () => {
+    it('should return 200 with RefreshToken', async () => {
+      const passwordHashed = await hash(password, 12)
+      await userCollection.insertOne({ email, password: passwordHashed })
+      const response = await request(app)
+        .post('/api/login')
+        .send({ email, password })
+      const { refreshToken } = response.body
+
+      const { status, body } = await request(app)
+        .post('/api/refresh-token')
+        .send({ refreshToken })
+
+      const createdAccount = await userCollection.findOne({ email })
+      expect(status).toBe(200)
+      expect(body).toHaveProperty('accessToken')
+      expect(body).toHaveProperty('refreshToken')
+      expect(body.email).toBe(createdAccount?.email)
+    })
+
+    it('should return 500 with ServerError', async () => {
+      const { status, body } = await request(app)
+        .post('/api/refresh-token')
+        .send({ refreshToken: 'invalid_refresh_token' })
+
+      expect(status).toBe(500)
+      expect(body).toEqual({ error: 'Server failed. Try again soon' })
+    })
+  })
 })
