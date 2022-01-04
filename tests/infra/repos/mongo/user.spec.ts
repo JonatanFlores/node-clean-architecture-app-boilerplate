@@ -1,6 +1,6 @@
 import { MongoHelper, MongoUser } from '@/infra/repos/mongo'
 
-import { Collection } from 'mongodb'
+import { Collection, ObjectId } from 'mongodb'
 
 describe('User', () => {
   let sut: MongoUser
@@ -28,6 +28,12 @@ describe('User', () => {
       const user = await sut.load({ id: insertedId.toHexString() })
 
       expect(user).toEqual({ id: insertedId.toHexString(), email: 'any_email' })
+    })
+
+    test('should return undefined if id does not exists', async () => {
+      const user = await sut.load({ id: (new ObjectId()).toHexString() })
+
+      expect(user).toBeUndefined()
     })
   })
 })
