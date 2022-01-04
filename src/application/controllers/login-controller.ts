@@ -5,7 +5,7 @@ import { Authentication } from '@/domain/usecases'
 import { ValidationBuilder as Builder, Validator } from '@/application/validation'
 
 type HttpRequest = { email: string, password: string }
-type Model = Error | { accessToken: string }
+type Model = Error | { email: string, accessToken: string, refreshToken: string }
 
 export class LoginController extends Controller {
   constructor (private readonly authentication: Authentication) {

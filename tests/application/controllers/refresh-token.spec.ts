@@ -1,16 +1,23 @@
 import { RequiredStringValidator, Validator, ValidationBuilder as Builder } from '@/application/validation'
-import { HttpResponse, ok } from '@/application/helpers'
+import { HttpResponse, ok, unauthorized } from '@/application/helpers'
+import { UnauthorizedError } from '@/application/errors'
 import { RefreshTokenType } from '@/domain/usecases'
+import { AuthenticationError } from '@/domain/entities/errors'
 
 type HttpRequest = { refreshToken: string }
-type Model = { email: string, accessToken: string, refreshToken: string }
+type Model = Error | { email: string, accessToken: string, refreshToken: string }
 
 class RefreshTokenController {
   constructor (private readonly refreshToken: RefreshTokenType) {}
 
   async handle ({ refreshToken }: HttpRequest): Promise<HttpResponse<Model>> {
-    const result = await this.refreshToken({ currentRefreshToken: refreshToken })
-    return ok(result)
+    try {
+      const result = await this.refreshToken({ currentRefreshToken: refreshToken })
+      return ok(result)
+    } catch (error) {
+      if (error instanceof AuthenticationError) return unauthorized()
+      throw error
+    }
   }
 
   buildValidators ({ refreshToken }: HttpRequest): Validator[] {
@@ -52,6 +59,17 @@ describe('RefreshToken', () => {
 
     expect(refreshTokenUseCase).toHaveBeenCalledWith({ currentRefreshToken: refreshToken })
     expect(refreshTokenUseCase).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return 401 if RefreshToken fails', async () => {
+    refreshTokenUseCase.mockRejectedValueOnce(new AuthenticationError())
+
+    const httpResponse = await sut.handle({ refreshToken })
+
+    expect(httpResponse).toEqual({
+      statusCode: 401,
+      data: new UnauthorizedError()
+    })
   })
 
   test('should return 200 if RefreshToken succeeds', async () => {

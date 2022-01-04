@@ -5,7 +5,7 @@ import { EmailAlreadyInUseError } from '@/domain/entities/errors'
 import { AddUserAccount } from '@/domain/usecases'
 
 type HttpRequest = { email: string, password: string }
-type Model = Error | { email: string, accessToken: string }
+type Model = Error | { email: string, accessToken: string, refreshToken: string }
 
 export class SignupController extends Controller {
   constructor (private readonly addUserAccount: AddUserAccount) {
