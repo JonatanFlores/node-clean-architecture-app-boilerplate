@@ -10,6 +10,7 @@ export class AuthenticationMiddleware implements Middleware {
   constructor (private readonly authorize: Authorize) {}
 
   async handle ({ authorization }: HttpRequest): Promise<HttpResponse<Model>> {
+    authorization = authorization?.replace('Bearer ', '')
     if (!this.validate({ authorization })) return forbidden()
     try {
       const userId = await this.authorize({ token: authorization })
