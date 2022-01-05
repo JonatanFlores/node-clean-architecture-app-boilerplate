@@ -40,4 +40,12 @@ describe('LoadLoggedInUser', () => {
 
     expect(user).toEqual({ id, email })
   })
+
+  test('should rethrow if LoadUser throws', async () => {
+    userRepo.load.mockRejectedValueOnce(new Error('load_user_error'))
+
+    const promise = sut({ id })
+
+    await expect(promise).rejects.toThrow(new Error('load_user_error'))
+  })
 })
