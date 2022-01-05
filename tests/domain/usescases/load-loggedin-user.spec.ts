@@ -1,15 +1,6 @@
+import { LoadLoggedInUser, setupLoadLoggedInUser } from '@/domain/usecases'
 import { LoadUser } from '@/domain/contracts/repos/mongo'
 import { mock, MockProxy } from 'jest-mock-extended'
-
-type Setup = (userRepo: LoadUser) => LoadLoggedInUser
-type Input = { id: string }
-type Output = undefined | { id: string, email: string }
-export type LoadLoggedInUser = (input: Input) => Promise<Output>
-
-const setupLoadLoggedInUser: Setup = (userRepo) => async ({ id }) => {
-  const user = await userRepo.load({ id })
-  return user
-}
 
 describe('LoadLoggedInUser', () => {
   let id: string
