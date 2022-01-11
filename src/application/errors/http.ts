@@ -19,3 +19,10 @@ export class ForbiddenError extends Error {
     this.name = 'ForbiddenError'
   }
 }
+
+export class NotFoundError extends Error {
+  constructor () {
+    super('Resource Not found')
+    this.name = 'NotFoundError'
+  }
+}

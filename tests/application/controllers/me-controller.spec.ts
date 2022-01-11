@@ -1,5 +1,6 @@
 import { MeController } from '@/application/controllers'
 import { RequiredStringValidator } from '@/application/validation'
+import { NotFoundError } from '@/application/errors'
 
 describe('MeController', () => {
   let userId: string
@@ -39,6 +40,17 @@ describe('MeController', () => {
     expect(httpResponse).toEqual({
       statusCode: 200,
       data: { id: userId, email }
+    })
+  })
+
+  test('should return 404 if LoadLoggedInUser returns undefined', async () => {
+    loadLoggedInUser.mockResolvedValueOnce(undefined)
+
+    const httpResponse = await sut.handle({ userId: 'non_existing_user_id' })
+
+    expect(httpResponse).toEqual({
+      statusCode: 404,
+      data: new NotFoundError()
     })
   })
 })
