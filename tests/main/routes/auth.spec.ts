@@ -1,9 +1,11 @@
 import { app } from '@/main/config/app'
+import { env } from '@/main/config/env'
 import { MongoHelper } from '@/infra/repos/mongo'
 
 import request from 'supertest'
-import { Collection } from 'mongodb'
+import { Collection, ObjectId } from 'mongodb'
 import { hash } from 'bcrypt'
+import { sign } from 'jsonwebtoken'
 
 describe('Auth Routes', () => {
   let email: string
@@ -103,6 +105,36 @@ describe('Auth Routes', () => {
 
       expect(status).toBe(500)
       expect(body).toEqual({ error: 'Server failed. Try again soon' })
+    })
+  })
+
+  describe('GET /api/me', () => {
+    it('should return 200 with User', async () => {
+      const passwordHashed = await hash(password, 12)
+      await userCollection.insertOne({ email, password: passwordHashed })
+      const response = await request(app)
+        .post('/api/login')
+        .send({ email, password })
+      const { accessToken } = response.body
+
+      const { status, body } = await request(app)
+        .get('/api/me')
+        .set({ authorization: `Bearer ${accessToken as string}` })
+
+      const user = await userCollection.findOne({ email })
+      expect(status).toBe(200)
+      expect(body).toHaveProperty('id')
+      expect(body.email).toBe(user?.email)
+    })
+
+    it('should return 404 if User was not found', async () => {
+      const accessToken = sign({ key: new ObjectId() }, env.jwtSecret)
+
+      const { status } = await request(app)
+        .get('/api/me')
+        .set({ authorization: `Bearer ${accessToken}` })
+
+      expect(status).toBe(404)
     })
   })
 })
