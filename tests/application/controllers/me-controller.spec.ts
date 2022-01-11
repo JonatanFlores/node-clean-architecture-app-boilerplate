@@ -3,12 +3,15 @@ import { RequiredStringValidator } from '@/application/validation'
 
 describe('MeController', () => {
   let userId: string
+  let email: string
   let loadLoggedInUser: jest.Mock
   let sut: MeController
 
   beforeAll(() => {
-    loadLoggedInUser = jest.fn()
     userId = 'any_user_id'
+    email = 'any_user_email'
+    loadLoggedInUser = jest.fn()
+    loadLoggedInUser.mockResolvedValue({ id: userId, email })
   })
 
   beforeEach(() => {
@@ -28,5 +31,14 @@ describe('MeController', () => {
 
     expect(loadLoggedInUser).toHaveBeenCalledWith({ id: userId })
     expect(loadLoggedInUser).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return 200 if LoadLoggedInUser succeeds', async () => {
+    const httpResponse = await sut.handle({ userId })
+
+    expect(httpResponse).toEqual({
+      statusCode: 200,
+      data: { id: userId, email }
+    })
   })
 })
