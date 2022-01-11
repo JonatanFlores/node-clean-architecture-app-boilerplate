@@ -1,6 +1,6 @@
 import { MeController } from '@/application/controllers'
 import { RequiredStringValidator } from '@/application/validation'
-import { NotFoundError } from '@/application/errors'
+import { NotFoundError, ServerError } from '@/application/errors'
 
 describe('MeController', () => {
   let userId: string
@@ -51,6 +51,18 @@ describe('MeController', () => {
     expect(httpResponse).toEqual({
       statusCode: 404,
       data: new NotFoundError()
+    })
+  })
+
+  test('should return 500 on infra error', async () => {
+    const error = new Error('infra_error')
+    loadLoggedInUser.mockRejectedValueOnce(error)
+
+    const httpResponse = await sut.handle({ userId })
+
+    expect(httpResponse).toEqual({
+      statusCode: 500,
+      data: new ServerError(error)
     })
   })
 })
