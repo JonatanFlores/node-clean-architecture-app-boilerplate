@@ -1,5 +1,7 @@
 import { AuthenticationMiddleware } from '@/application/middlewares'
-import { ForbiddenError } from '@/application/errors'
+import { ForbiddenError, TokenExpiredError, TokenInvalidError } from '@/application/errors'
+
+import { JsonWebTokenError, TokenExpiredError as JwtTokenExpiredError } from 'jsonwebtoken'
 
 describe('AuthenticationMiddleware', () => {
   let sut: AuthenticationMiddleware
@@ -57,6 +59,28 @@ describe('AuthenticationMiddleware', () => {
     expect(httpResponse).toEqual({
       statusCode: 403,
       data: new ForbiddenError()
+    })
+  })
+
+  test('should return 401 if token is expired', async () => {
+    authorize.mockRejectedValueOnce(new JwtTokenExpiredError('jwt expired', new Date()))
+
+    const httpResponse = await sut.handle({ authorization })
+
+    expect(httpResponse).toEqual({
+      statusCode: 401,
+      data: new TokenExpiredError()
+    })
+  })
+
+  test('should return 401 if token is invalid', async () => {
+    authorize.mockRejectedValueOnce(new JsonWebTokenError('invalid jwt'))
+
+    const httpResponse = await sut.handle({ authorization })
+
+    expect(httpResponse).toEqual({
+      statusCode: 401,
+      data: new TokenInvalidError()
     })
   })
 

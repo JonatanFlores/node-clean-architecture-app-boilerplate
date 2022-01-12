@@ -1,6 +1,8 @@
 import { Middleware } from '@/application/middlewares'
-import { forbidden, HttpResponse, ok } from '@/application/helpers'
+import { forbidden, HttpResponse, ok, tokenExpired, tokenInvalid } from '@/application/helpers'
 import { RequiredStringValidator } from '@/application/validation'
+
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
 
 type HttpRequest = { authorization: string }
 type Model = Error | { userId: string }
@@ -15,7 +17,9 @@ export class AuthenticationMiddleware implements Middleware {
     try {
       const userId = await this.authorize({ token: authorization })
       return ok({ userId })
-    } catch {
+    } catch (error) {
+      if (error instanceof TokenExpiredError) return tokenExpired()
+      if (error instanceof JsonWebTokenError) return tokenInvalid()
       return forbidden()
     }
   }
