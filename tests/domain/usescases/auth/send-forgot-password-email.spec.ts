@@ -1,14 +1,18 @@
-import { LoadUserAccount } from '@/domain/contracts/repos/mongo'
+import { LoadUserAccount, SaveUserToken } from '@/domain/contracts/repos/mongo'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 
-type Setup = (userAccount: LoadUserAccount, mail: Mail, to: string, body: string) => SendForgotPasswordEmail
+type Setup = (userAccount: LoadUserAccount, userToken: SaveUserToken, mail: Mail, to: string, body: string) => SendForgotPasswordEmail
 type Input = { email: string }
 export type SendForgotPasswordEmail = (input: Input) => Promise<void>
 
-const setupSendForgotPasswordEmail: Setup = (userAccount, mail, to, body) => async ({ email }) => {
+const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail, to, body) => async ({ email }) => {
   const userAccountData = await userAccount.load({ email })
-  if (userAccountData !== undefined) await mail.send({ to, body })
+  if (userAccountData !== undefined) {
+    const { id } = userAccountData
+    await userToken.save({ userId: id })
+    await mail.send({ to, body })
+  }
 }
 
 export interface Mail {
@@ -26,6 +30,7 @@ describe('SendForgotPasswordEmail', () => {
   let to: string
   let body: string
   let userAccount: MockProxy<LoadUserAccount>
+  let userToken: MockProxy<SaveUserToken>
   let mail: MockProxy<Mail>
   let sut: SendForgotPasswordEmail
 
@@ -37,11 +42,12 @@ describe('SendForgotPasswordEmail', () => {
     body = 'any_body'
     userAccount = mock()
     userAccount.load.mockResolvedValue({ id, email, password })
+    userToken = mock()
     mail = mock()
   })
 
   beforeEach(() => {
-    sut = setupSendForgotPasswordEmail(userAccount, mail, to, body)
+    sut = setupSendForgotPasswordEmail(userAccount, userToken, mail, to, body)
   })
 
   test('should call LoadUserAccount with correct input', async () => {
@@ -64,5 +70,11 @@ describe('SendForgotPasswordEmail', () => {
     await sut({ email })
 
     expect(mail.send).not.toHaveBeenCalled()
+  })
+
+  test('should SaveUserToken with correct input', async () => {
+    await sut({ email })
+
+    expect(userToken.save).toHaveBeenCalledWith({ userId: id })
   })
 })
