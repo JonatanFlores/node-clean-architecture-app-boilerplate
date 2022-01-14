@@ -7,8 +7,8 @@ type Input = { email: string }
 export type SendForgotPasswordEmail = (input: Input) => Promise<void>
 
 const setupSendForgotPasswordEmail: Setup = (userAccount, mail, to, body) => async ({ email }) => {
-  await userAccount.load({ email })
-  await mail.send({ to, body })
+  const userAccountData = await userAccount.load({ email })
+  if (userAccountData !== undefined) await mail.send({ to, body })
 }
 
 export interface Mail {
@@ -56,5 +56,13 @@ describe('SendForgotPasswordEmail', () => {
 
     expect(mail.send).toHaveBeenCalledWith({ to, body })
     expect(mail.send).toHaveBeenCalledTimes(1)
+  })
+
+  test('should not call Mail if user was not found for the given email', async () => {
+    userAccount.load.mockResolvedValueOnce(undefined)
+
+    await sut({ email })
+
+    expect(mail.send).not.toHaveBeenCalled()
   })
 })
