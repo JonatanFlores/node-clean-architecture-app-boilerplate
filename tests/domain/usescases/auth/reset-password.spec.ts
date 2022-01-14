@@ -1,19 +1,21 @@
-import { LoadUser } from '@/domain/contracts/repos/mongo'
+import { ChangeUserAccountPassword, LoadUser } from '@/domain/contracts/repos/mongo'
 import { Hasher } from '@/domain/contracts/gateways'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 
-type Setup = (userTokenRepo: LoadUserToken, userRepo: LoadUser, hasher: Hasher) => ResetPassword
+type Setup = (userTokenRepo: LoadUserToken, userRepo: LoadUser, userAccount: ChangeUserAccountPassword, hasher: Hasher) => ResetPassword
 type Input = { token: string, password: string }
 export type ResetPassword = (input: Input) => Promise<void>
 
-const setupResetPassword: Setup = (userTokenRepo, userRepo, hasher) => async ({ token, password }) => {
+const setupResetPassword: Setup = (userTokenRepo, userRepo, userAccountRepo, hasher) => async ({ token, password }) => {
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ResetPasswordTokenError()
   const { userId } = userToken
   const user = await userRepo.load({ id: userId })
   if (user === undefined) throw new UserNotFoundError()
-  await hasher.hash({ value: password })
+  const { id } = user
+  const passwordHashed = await hasher.hash({ value: password })
+  await userAccountRepo.changePassword({ id, password: passwordHashed })
 }
 
 export interface LoadUserToken {
@@ -41,14 +43,17 @@ export class UserNotFoundError extends Error {
 
 describe('ResetPassword', () => {
   let password: string
+  let passwordHashed: string
   let token: string
   let userTokenRepo: MockProxy<LoadUserToken>
   let userRepo: MockProxy<LoadUser>
+  let userAccountRepo: MockProxy<ChangeUserAccountPassword>
   let hasher: MockProxy<Hasher>
   let sut: ResetPassword
 
   beforeAll(() => {
     password = 'any_password'
+    passwordHashed = 'any_hased_password'
     token = 'any_reset_password_token'
     userTokenRepo = mock()
     userTokenRepo.load.mockResolvedValue({
@@ -58,14 +63,16 @@ describe('ResetPassword', () => {
     })
     userRepo = mock()
     userRepo.load.mockResolvedValue({
-      id: 'any_user_token_id',
+      id: 'any_user_id',
       email: 'any_email'
     })
+    userAccountRepo = mock()
     hasher = mock()
+    hasher.hash.mockResolvedValue(passwordHashed)
   })
 
   beforeEach(() => {
-    sut = setupResetPassword(userTokenRepo, userRepo, hasher)
+    sut = setupResetPassword(userTokenRepo, userRepo, userAccountRepo, hasher)
   })
 
   test('should call LoadUserToken with correct input', async () => {
@@ -103,5 +110,12 @@ describe('ResetPassword', () => {
 
     expect(hasher.hash).toHaveBeenCalledWith({ value: password })
     expect(hasher.hash).toHaveBeenCalledTimes(1)
+  })
+
+  test('should call ChangeUserAccountPassword with the correct input', async () => {
+    await sut({ token, password })
+
+    expect(userAccountRepo.changePassword).toHaveBeenCalledWith({ id: 'any_user_id', password: passwordHashed })
+    expect(userAccountRepo.changePassword).toHaveBeenCalledTimes(1)
   })
 })
