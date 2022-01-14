@@ -47,4 +47,19 @@ describe('UserAccount', () => {
       expect(account.id).toBeDefined()
     })
   })
+
+  describe('changePassword', () => {
+    test('should return an account with the new password if it succeeds', async () => {
+      const accountData = { email: 'any_email', password: 'any_password' }
+      const { insertedId: id } = await userCollection.insertOne({ ...accountData })
+
+      const account = await sut.changePassword({ id: id.toHexString(), password: 'new_password' })
+
+      expect(account).toEqual({
+        id: id.toHexString(),
+        email: 'any_email',
+        password: 'new_password'
+      })
+    })
+  })
 })

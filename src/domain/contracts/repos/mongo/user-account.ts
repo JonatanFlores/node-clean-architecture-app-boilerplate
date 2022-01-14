@@ -19,3 +19,12 @@ export namespace SaveUserAccount {
   export type Input = { email: string, password: string }
   export type Output = { id: string, email: string, password: string }
 }
+
+export interface ChangeUserAccountPassword {
+  changePassword: (input: ChangeUserAccountPassword.Input) => Promise<ChangeUserAccountPassword.Output>
+}
+
+export namespace ChangeUserAccountPassword {
+  export type Input = { id: string, password: string }
+  export type Output = { id: string, email: string }
+}

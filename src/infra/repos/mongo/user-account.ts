@@ -1,7 +1,9 @@
 import { MongoHelper } from '@/infra/repos/mongo'
-import { LoadUserAccount, SaveUserAccount } from '@/domain/contracts/repos/mongo'
+import { LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword } from '@/domain/contracts/repos/mongo'
 
-export class MongoUserAccount implements LoadUserAccount, SaveUserAccount {
+import { ObjectId } from 'mongodb'
+
+export class MongoUserAccount implements LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword {
   async load ({ email }: LoadUserAccount.Input): Promise<LoadUserAccount.Output> {
     const userCollection = MongoHelper.getCollection('users')
     const account = await userCollection.findOne(
@@ -19,5 +21,15 @@ export class MongoUserAccount implements LoadUserAccount, SaveUserAccount {
       { projection: { _id: 1, email: 1 } }
     )
     return MongoHelper.map(account)
+  }
+
+  async changePassword ({ id, password }: ChangeUserAccountPassword.Input): Promise<ChangeUserAccountPassword.Output> {
+    const userCollection = MongoHelper.getCollection('users')
+    const updatedUserAccount = await userCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { password } },
+      { returnDocument: 'after' }
+    )
+    return MongoHelper.map(updatedUserAccount.value)
   }
 }
