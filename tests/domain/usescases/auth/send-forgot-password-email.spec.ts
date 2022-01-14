@@ -1,27 +1,8 @@
+import { SendForgotPasswordEmail, setupSendForgotPasswordEmail } from '@/domain/usecases'
+import { Mail } from '@/domain/contracts/gateways'
 import { LoadUserAccount, SaveUserToken } from '@/domain/contracts/repos/mongo'
 
 import { mock, MockProxy } from 'jest-mock-extended'
-
-type Setup = (userAccount: LoadUserAccount, userToken: SaveUserToken, mail: Mail, to: string, body: string) => SendForgotPasswordEmail
-type Input = { email: string }
-export type SendForgotPasswordEmail = (input: Input) => Promise<void>
-
-const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail, to, body) => async ({ email }) => {
-  const userAccountData = await userAccount.load({ email })
-  if (userAccountData !== undefined) {
-    const { id } = userAccountData
-    await userToken.save({ userId: id })
-    await mail.send({ to, body })
-  }
-}
-
-export interface Mail {
-  send: ({ to, body }: Mail.Input) => Promise<void>
-}
-
-export namespace Mail {
-  export type Input = { to: string, body: string }
-}
 
 describe('SendForgotPasswordEmail', () => {
   let id: string
