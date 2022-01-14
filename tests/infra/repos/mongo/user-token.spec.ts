@@ -29,6 +29,7 @@ describe('UserToken', () => {
       expect(userToken).toMatchObject({ userId: 'any_user_id' })
       expect(userToken.id).toBeDefined()
       expect(userToken.token).toBeDefined()
+      expect(userToken.createdAt).toBeDefined()
     })
   })
 })

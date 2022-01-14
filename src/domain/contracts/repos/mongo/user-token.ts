@@ -4,5 +4,5 @@ export interface SaveUserToken {
 
 export namespace SaveUserToken {
   export type Input = { userId: string }
-  export type Output = { id: string, userId: string, token: string }
+  export type Output = { id: string, userId: string, createdAt: string, token: string }
 }
