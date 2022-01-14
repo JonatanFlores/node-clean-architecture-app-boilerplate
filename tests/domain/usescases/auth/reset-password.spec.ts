@@ -1,12 +1,15 @@
+import { LoadUser } from '@/domain/contracts/repos/mongo'
 import { mock, MockProxy } from 'jest-mock-extended'
 
-type Setup = (userTokenRepo: LoadUserToken) => ResetPassword
+type Setup = (userTokenRepo: LoadUserToken, userRepo: LoadUser) => ResetPassword
 type Input = { token: string, password: string }
 export type ResetPassword = (input: Input) => Promise<void>
 
-const setupResetPassword: Setup = (userTokenRepo) => async ({ token }) => {
+const setupResetPassword: Setup = (userTokenRepo, userRepo) => async ({ token }) => {
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ResetPasswordTokenError()
+  const { userId } = userToken
+  await userRepo.load({ id: userId })
 }
 
 export interface LoadUserToken {
@@ -29,6 +32,7 @@ describe('ResetPassword', () => {
   let password: string
   let token: string
   let userTokenRepo: MockProxy<LoadUserToken>
+  let userRepo: MockProxy<LoadUser>
   let sut: ResetPassword
 
   beforeAll(() => {
@@ -40,10 +44,11 @@ describe('ResetPassword', () => {
       userId: 'any_user_id',
       token
     })
+    userRepo = mock()
   })
 
   beforeEach(() => {
-    sut = setupResetPassword(userTokenRepo)
+    sut = setupResetPassword(userTokenRepo, userRepo)
   })
 
   test('should call LoadUserToken with correct input', async () => {
@@ -59,5 +64,12 @@ describe('ResetPassword', () => {
     const promise = sut({ token, password })
 
     await expect(promise).rejects.toThrow(new ResetPasswordTokenError())
+  })
+
+  test('should call LoadUser with correct input', async () => {
+    await sut({ token, password })
+
+    expect(userRepo.load).toHaveBeenCalledWith({ id: 'any_user_id' })
+    expect(userRepo.load).toHaveBeenCalledTimes(1)
   })
 })
