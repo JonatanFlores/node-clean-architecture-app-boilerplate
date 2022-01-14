@@ -9,7 +9,8 @@ const setupResetPassword: Setup = (userTokenRepo, userRepo) => async ({ token })
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ResetPasswordTokenError()
   const { userId } = userToken
-  await userRepo.load({ id: userId })
+  const user = await userRepo.load({ id: userId })
+  if (user === undefined) throw new UserNotFoundError()
 }
 
 export interface LoadUserToken {
@@ -25,6 +26,13 @@ export class ResetPasswordTokenError extends Error {
   constructor () {
     super('Invalid reset password token')
     this.name = 'ResetPasswordTokenError'
+  }
+}
+
+export class UserNotFoundError extends Error {
+  constructor () {
+    super('User not found')
+    this.name = 'UserNotFoundError'
   }
 }
 
@@ -45,6 +53,10 @@ describe('ResetPassword', () => {
       token
     })
     userRepo = mock()
+    userRepo.load.mockResolvedValue({
+      id: 'any_user_token_id',
+      email: 'any_email'
+    })
   })
 
   beforeEach(() => {
@@ -71,5 +83,13 @@ describe('ResetPassword', () => {
 
     expect(userRepo.load).toHaveBeenCalledWith({ id: 'any_user_id' })
     expect(userRepo.load).toHaveBeenCalledTimes(1)
+  })
+
+  test('should throw UserNotFoundError if LoadUser returns undefined', async () => {
+    userRepo.load.mockResolvedValueOnce(undefined)
+
+    const promise = sut({ token, password })
+
+    await expect(promise).rejects.toThrow(new UserNotFoundError())
   })
 })
