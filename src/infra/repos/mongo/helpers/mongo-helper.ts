@@ -1,4 +1,4 @@
-import { MongoClient, Collection } from 'mongodb'
+import { MongoClient, Collection, ObjectId } from 'mongodb'
 
 export const MongoHelper = {
   client: null as unknown as MongoClient,
@@ -12,6 +12,10 @@ export const MongoHelper = {
   async disconnect (): Promise<void> {
     await this.client.close()
     this.client = null as unknown as MongoClient
+  },
+
+  generateRandomId (): string {
+    return new ObjectId().toHexString()
   },
 
   getCollection (name: string): Collection {
