@@ -12,7 +12,9 @@ const setupResetPassword: Setup = (userTokenRepo, userRepo, userAccountRepo, has
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ResetPasswordTokenNotFoundError()
   const { userId, createdAt } = userToken
-  dateHandler.diffInHours(new Date(createdAt), new Date())
+  const tokenExpirationLimitInHours = 2
+  const tokenCreationInHours = dateHandler.diffInHours(new Date(createdAt), new Date())
+  if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ResetPasswordTokenExpiredError()
   const user = await userRepo.load({ id: userId })
   if (user === undefined) throw new UserNotFoundError()
   const { id } = user
@@ -159,5 +161,13 @@ describe('ResetPassword', () => {
       threeHoursAfterCreatedAt
     )
     MockDate.set(previousDate)
+  })
+
+  test('should not be able to reset password after 2 hours', async () => {
+    dateHandler.diffInHours.mockReturnValueOnce(3)
+
+    const promise = sut({ token, password })
+
+    await expect(promise).rejects.toThrow(new ResetPasswordTokenExpiredError())
   })
 })
