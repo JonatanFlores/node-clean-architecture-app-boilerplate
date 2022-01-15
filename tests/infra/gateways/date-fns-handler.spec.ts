@@ -1,9 +1,11 @@
+import { DateDifferenceInHours } from '@/domain/contracts/gateways'
+
 import * as datefns from 'date-fns'
 import MockDate from 'mockdate'
 
 jest.mock('date-fns')
 
-class DateFnsHandler {
+class DateFnsHandler implements DateDifferenceInHours {
   diffInHours (dateLeft: number | Date, dateRight: number | Date): number {
     return datefns.differenceInHours(dateLeft, dateRight)
   }
@@ -35,17 +37,26 @@ describe('DateFnsHandler', () => {
       fakeDateFns.differenceInHours.mockImplementation(() => 2)
     })
 
-    test('should call differenceInHours with correct input', async () => {
+    test('should call differenceInHours with correct input', () => {
       sut.diffInHours(dateLeft, dateRight)
 
       expect(fakeDateFns.differenceInHours).toHaveBeenCalledWith(dateLeft, dateRight)
       expect(fakeDateFns.differenceInHours).toHaveBeenCalledTimes(1)
     })
 
-    test('should return the difference in hours', async () => {
+    test('should return the difference in hours', () => {
       const result = sut.diffInHours(dateLeft, dateRight)
 
       expect(result).toBe(2)
+    })
+
+    test('should rethrow if differenceInHours throws', () => {
+      const error = new Error('differenceInHours_error')
+      fakeDateFns.differenceInHours.mockImplementationOnce(() => { throw error })
+
+      expect(() => {
+        sut.diffInHours(dateLeft, dateRight)
+      }).toThrow(error)
     })
   })
 })
