@@ -1,60 +1,10 @@
-import { ChangeUserAccountPassword, LoadUser } from '@/domain/contracts/repos/mongo'
-import { Hasher } from '@/domain/contracts/gateways'
+import { ResetPassword, setupResetPassword } from '@/domain/usecases'
+import { ChangeUserAccountPassword, LoadUser, LoadUserToken } from '@/domain/contracts/repos/mongo'
+import { DateDifferenceInHours, Hasher } from '@/domain/contracts/gateways'
+import { ResetPasswordTokenExpiredError, ResetPasswordTokenNotFoundError, UserNotFoundError } from '@/domain/entities/errors'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 import MockDate from 'mockdate'
-
-type Setup = (userTokenRepo: LoadUserToken, userRepo: LoadUser, userAccount: ChangeUserAccountPassword, hasher: Hasher, dateHandler: DateDifferenceInHours) => ResetPassword
-type Input = { token: string, password: string }
-export type ResetPassword = (input: Input) => Promise<void>
-
-const setupResetPassword: Setup = (userTokenRepo, userRepo, userAccountRepo, hasher, dateHandler) => async ({ token, password }) => {
-  const userToken = await userTokenRepo.load({ token })
-  if (userToken === undefined) throw new ResetPasswordTokenNotFoundError()
-  const { userId, createdAt } = userToken
-  const tokenExpirationLimitInHours = 2
-  const tokenCreationInHours = dateHandler.diffInHours(new Date(createdAt), new Date())
-  if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ResetPasswordTokenExpiredError()
-  const user = await userRepo.load({ id: userId })
-  if (user === undefined) throw new UserNotFoundError()
-  const { id } = user
-  const passwordHashed = await hasher.hash({ value: password })
-  await userAccountRepo.changePassword({ id, password: passwordHashed })
-}
-
-export interface LoadUserToken {
-  load: (input: LoadUserToken.Input) => Promise<LoadUserToken.Output>
-}
-
-export namespace LoadUserToken {
-  export type Input = { token: string }
-  export type Output = undefined | { id: string, userId: string, createdAt: string, token: string }
-}
-
-export class ResetPasswordTokenNotFoundError extends Error {
-  constructor () {
-    super('Reset password token not found')
-    this.name = 'ResetPasswordTokenNotFoundError'
-  }
-}
-
-export class ResetPasswordTokenExpiredError extends Error {
-  constructor () {
-    super('Reset password token expired')
-    this.name = 'ResetPasswordTokenExpiredError'
-  }
-}
-
-export class UserNotFoundError extends Error {
-  constructor () {
-    super('User not found')
-    this.name = 'UserNotFoundError'
-  }
-}
-
-export interface DateDifferenceInHours {
-  diffInHours: (dateLeft: number | Date, dateRight: number | Date) => number
-}
 
 describe('ResetPassword', () => {
   let password: string
