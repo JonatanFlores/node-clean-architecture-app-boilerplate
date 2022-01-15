@@ -4,8 +4,8 @@ import MockDate from 'mockdate'
 jest.mock('date-fns')
 
 class DateFnsHandler {
-  diffInHours (dateLeft: number | Date, dateRight: number | Date): void {
-    datefns.differenceInHours(dateLeft, dateRight)
+  diffInHours (dateLeft: number | Date, dateRight: number | Date): number {
+    return datefns.differenceInHours(dateLeft, dateRight)
   }
 }
 
@@ -40,6 +40,12 @@ describe('DateFnsHandler', () => {
 
       expect(fakeDateFns.differenceInHours).toHaveBeenCalledWith(dateLeft, dateRight)
       expect(fakeDateFns.differenceInHours).toHaveBeenCalledTimes(1)
+    })
+
+    test('should return the difference in hours', async () => {
+      const result = sut.diffInHours(dateLeft, dateRight)
+
+      expect(result).toBe(2)
     })
   })
 })
