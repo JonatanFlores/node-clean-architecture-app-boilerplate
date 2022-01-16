@@ -1,23 +1,7 @@
+import { EmailValidatorContract, EmailValidator } from '@/application/validation'
 import { EmailInvalidError } from '@/application/errors'
 
 import { mock, MockProxy } from 'jest-mock-extended'
-
-export class EmailValidator {
-  constructor (
-    private readonly value: string,
-    private readonly emailValidator: EmailValidatorContract
-  ) {}
-
-  validate (): Error | undefined {
-    if (!this.emailValidator.isValid(this.value)) {
-      return new EmailInvalidError()
-    }
-  }
-}
-
-export interface EmailValidatorContract {
-  isValid: (email: string) => boolean
-}
 
 describe('EmailValidator', () => {
   let email: string
