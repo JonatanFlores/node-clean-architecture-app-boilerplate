@@ -2,7 +2,7 @@ import { HashComparer, Hasher } from '@/domain/contracts/gateways'
 
 import bcrypt from 'bcrypt'
 
-export class BcryptHashHandler implements HashComparer {
+export class BcryptHashHandler implements HashComparer, Hasher {
   constructor (private readonly salt: number) {}
 
   async compare ({ plaintext, digest }: HashComparer.Input): Promise<HashComparer.Output> {
