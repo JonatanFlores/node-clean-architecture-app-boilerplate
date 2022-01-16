@@ -1,3 +1,5 @@
+import { EmailInvalidError } from '@/application/errors'
+
 import { mock, MockProxy } from 'jest-mock-extended'
 
 export class EmailValidator {
@@ -6,8 +8,10 @@ export class EmailValidator {
     private readonly emailValidator: EmailValidatorContract
   ) {}
 
-  validate (): void {
-    this.emailValidator.isValid(this.value)
+  validate (): Error | undefined {
+    if (!this.emailValidator.isValid(this.value)) {
+      return new EmailInvalidError()
+    }
   }
 }
 
@@ -23,6 +27,7 @@ describe('EmailValidator', () => {
   beforeAll(() => {
     email = 'any_email'
     emailValidator = mock()
+    emailValidator.isValid.mockReturnValue(true)
   })
 
   beforeEach(() => {
@@ -34,5 +39,13 @@ describe('EmailValidator', () => {
 
     expect(emailValidator.isValid).toHaveBeenCalledWith(email)
     expect(emailValidator.isValid).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return EmailInvalidError if isValid return false', () => {
+    emailValidator.isValid.mockReturnValueOnce(false)
+
+    const result = sut.validate()
+
+    expect(result).toBeInstanceOf(EmailInvalidError)
   })
 })
