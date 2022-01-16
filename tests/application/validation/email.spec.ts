@@ -48,4 +48,10 @@ describe('EmailValidator', () => {
 
     expect(result).toBeInstanceOf(EmailInvalidError)
   })
+
+  test('should return undefined if email is valid', () => {
+    const result = sut.validate()
+
+    expect(result).toBeUndefined()
+  })
 })
