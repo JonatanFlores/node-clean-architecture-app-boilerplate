@@ -1,17 +1,13 @@
-import validator from 'validator'
+import { EmailValidatorAdapter } from '@/shared/adapters/validators'
 
-export class EmailValidator {
-  isValid (email: string): boolean {
-    return validator.isEmail(email)
-  }
-}
+import validator from 'validator'
 
 jest.mock('validator')
 
-describe('EmailValidator', () => {
+describe('EmailValidatorAdapter', () => {
   let email: string
   let fakeValidator: jest.Mocked<typeof validator>
-  let sut: EmailValidator
+  let sut: EmailValidatorAdapter
 
   beforeAll(() => {
     email = 'any_email@mail.com'
@@ -20,7 +16,7 @@ describe('EmailValidator', () => {
   })
 
   beforeEach(() => {
-    sut = new EmailValidator()
+    sut = new EmailValidatorAdapter()
   })
 
   test('should call validator with correct email', () => {
