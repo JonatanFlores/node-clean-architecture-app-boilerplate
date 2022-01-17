@@ -1,3 +1,3 @@
-export * from './user'
-export * from './user-account'
-export * from './user-token'
+export * from './mongo-user-repository-factory'
+export * from './mongo-user-account-repository-factory'
+export * from './mongo-user-token-repository-factory'

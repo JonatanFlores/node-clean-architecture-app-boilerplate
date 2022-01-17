@@ -1,4 +1,4 @@
 export * from './helpers/mongo-helper'
-export * from './user'
-export * from './user-account'
-export * from './user-token'
+export * from './mongo-user-repository'
+export * from './mongo-user-account-repository'
+export * from './mongo-user-token-repository'

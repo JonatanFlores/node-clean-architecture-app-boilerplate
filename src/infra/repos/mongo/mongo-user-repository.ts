@@ -3,7 +3,7 @@ import { MongoHelper } from '@/infra/repos/mongo'
 
 import { ObjectId } from 'mongodb'
 
-export class MongoUser implements LoadUser {
+export class MongoUserRepository implements LoadUser {
   async load ({ id }: LoadUser.Input): Promise<LoadUser.Output> {
     const userCollection = MongoHelper.getCollection('users')
     const user = await userCollection.findOne(

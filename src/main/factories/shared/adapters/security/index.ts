@@ -1,2 +1,2 @@
-export * from './hash-handler'
-export * from './token-handler'
+export * from './bcrypt-adapter-factory'
+export * from './jwt-adapter-factory'

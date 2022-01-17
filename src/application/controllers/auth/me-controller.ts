@@ -1,4 +1,4 @@
-import { Controller } from '@/application/controllers'
+import { BaseController } from '@/application/controllers'
 import { ValidationBuilder as Builder, Validator } from '@/application/validation'
 import { HttpResponse, notFound, ok } from '@/application/helpers'
 import { LoadLoggedInUser } from '@/domain/usecases'
@@ -6,7 +6,7 @@ import { LoadLoggedInUser } from '@/domain/usecases'
 type HttpRequest = { userId: string }
 type Model = Error | { id: string, email: string }
 
-export class MeController extends Controller {
+export class MeController extends BaseController {
   constructor (private readonly loadLoggedInUser: LoadLoggedInUser) {
     super()
   }

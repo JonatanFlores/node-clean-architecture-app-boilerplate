@@ -1,9 +1,9 @@
-import { MongoHelper, MongoUser } from '@/infra/repos/mongo'
+import { MongoHelper, MongoUserRepository } from '@/infra/repos/mongo'
 
 import { Collection, ObjectId } from 'mongodb'
 
-describe('User', () => {
-  let sut: MongoUser
+describe('MongoUserRepository', () => {
+  let sut: MongoUserRepository
   let userCollection: Collection
 
   beforeAll(async () => {
@@ -17,7 +17,7 @@ describe('User', () => {
   beforeEach(async () => {
     userCollection = MongoHelper.getCollection('users')
     await userCollection.deleteMany({})
-    sut = new MongoUser()
+    sut = new MongoUserRepository()
   })
 
   describe('load', () => {

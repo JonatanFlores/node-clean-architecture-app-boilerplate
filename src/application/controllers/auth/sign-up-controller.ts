@@ -1,4 +1,4 @@
-import { Controller } from '@/application/controllers'
+import { BaseController } from '@/application/controllers'
 import { badRequest, HttpResponse, ok } from '@/application/helpers'
 import { ValidationBuilder as Build, Validator } from '@/application/validation'
 import { EmailAlreadyInUseError } from '@/domain/entities/errors'
@@ -7,7 +7,7 @@ import { AddUserAccount } from '@/domain/usecases'
 type HttpRequest = { email: string, password: string }
 type Model = Error | { email: string, accessToken: string, refreshToken: string }
 
-export class SignUpController extends Controller {
+export class SignUpController extends BaseController {
   constructor (private readonly addUserAccount: AddUserAccount) {
     super()
   }

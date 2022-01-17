@@ -1,7 +1,7 @@
 import { MongoHelper } from '@/infra/repos/mongo'
 import { SaveUserToken } from '@/domain/contracts/repos/mongo'
 
-export class MongoUserToken implements SaveUserToken {
+export class MongoUserTokenRepository implements SaveUserToken {
   async save ({ userId }: SaveUserToken.Input): Promise<SaveUserToken.Output> {
     const userToken = MongoHelper.getCollection('users-tokens')
     const token = MongoHelper.generateRandomId()

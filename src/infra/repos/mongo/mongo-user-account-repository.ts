@@ -3,7 +3,7 @@ import { LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword } from '@/d
 
 import { ObjectId } from 'mongodb'
 
-export class MongoUserAccount implements LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword {
+export class MongoUserAccountRepository implements LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword {
   async load ({ email }: LoadUserAccount.Input): Promise<LoadUserAccount.Output> {
     const userCollection = MongoHelper.getCollection('users')
     const account = await userCollection.findOne(

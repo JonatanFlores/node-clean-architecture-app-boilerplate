@@ -1,1 +1,1 @@
-export * from './amazon-ses-handler'
+export * from './amazon-ses-adapter-factory'

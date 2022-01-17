@@ -1,14 +1,14 @@
-import { DateFnsHandler } from '@/shared/adapters/datetime'
+import { DateFnsAdapter } from '@/shared/adapters/datetime'
 
 import * as datefns from 'date-fns'
 import MockDate from 'mockdate'
 
 jest.mock('date-fns')
 
-describe('DateFnsHandler', () => {
+describe('DateFnsAdapter', () => {
   let dateRight: Date
   let dateLeft: Date
-  let sut: DateFnsHandler
+  let sut: DateFnsAdapter
   let fakeDateFns: jest.Mocked<typeof datefns>
 
   beforeAll(() => {
@@ -23,7 +23,7 @@ describe('DateFnsHandler', () => {
   })
 
   beforeEach(() => {
-    sut = new DateFnsHandler()
+    sut = new DateFnsAdapter()
   })
 
   describe('diffInHours', () => {

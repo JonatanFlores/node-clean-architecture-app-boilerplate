@@ -1,4 +1,4 @@
-import { Controller } from '@/application/controllers'
+import { BaseController } from '@/application/controllers'
 import { HttpResponse, ok, unauthorized } from '@/application/helpers'
 import { AuthenticationError } from '@/domain/entities/errors'
 import { Authentication } from '@/domain/usecases'
@@ -7,7 +7,7 @@ import { ValidationBuilder as Builder, Validator } from '@/application/validatio
 type HttpRequest = { email: string, password: string }
 type Model = Error | { email: string, accessToken: string, refreshToken: string }
 
-export class SignInController extends Controller {
+export class SignInController extends BaseController {
   constructor (private readonly authentication: Authentication) {
     super()
   }

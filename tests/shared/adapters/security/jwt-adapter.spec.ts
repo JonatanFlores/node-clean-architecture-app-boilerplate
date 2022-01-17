@@ -1,13 +1,13 @@
-import { JwtTokenHandler } from '@/shared/adapters/security'
+import { JwtAdapter } from '@/shared/adapters/security'
 
 import jwt from 'jsonwebtoken'
 
 jest.mock('jsonwebtoken')
 
-describe('JwtTokenHandler', () => {
+describe('JwtAdapter', () => {
   let secret: string
   let fakeJwt: jest.Mocked<typeof jwt>
-  let sut: JwtTokenHandler
+  let sut: JwtAdapter
 
   beforeAll(() => {
     secret = 'any_secret'
@@ -15,7 +15,7 @@ describe('JwtTokenHandler', () => {
   })
 
   beforeEach(() => {
-    sut = new JwtTokenHandler(secret)
+    sut = new JwtAdapter(secret)
   })
 
   describe('generate', () => {

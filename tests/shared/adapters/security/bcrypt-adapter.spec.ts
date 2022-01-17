@@ -1,14 +1,14 @@
-import { BcryptHashHandler } from '@/shared/adapters/security'
+import { BcryptAdapter } from '@/shared/adapters/security'
 
 import bcrypt from 'bcrypt'
 
 jest.mock('bcrypt')
 
-describe('BcryptHashHandler', () => {
+describe('BcryptAdapter', () => {
   let salt: number
   let plaintext: string
   let digest: string
-  let sut: BcryptHashHandler
+  let sut: BcryptAdapter
   let fakeBcrypt: jest.Mocked<typeof bcrypt>
 
   beforeAll(() => {
@@ -19,7 +19,7 @@ describe('BcryptHashHandler', () => {
   })
 
   beforeEach(() => {
-    sut = new BcryptHashHandler(salt)
+    sut = new BcryptAdapter(salt)
   })
 
   describe('compare', () => {

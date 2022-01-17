@@ -1,4 +1,4 @@
-import { Controller } from '@/application/controllers'
+import { BaseController } from '@/application/controllers'
 import { ServerError } from '@/application/errors'
 import { ValidationComposite } from '@/application/validation'
 
@@ -7,7 +7,7 @@ import { HttpResponse } from '../helpers'
 
 jest.mock('@/application/validation/composite')
 
-class ControllerStub extends Controller {
+class BaseControllerStub extends BaseController {
   result: HttpResponse = {
     statusCode: 200,
     data: 'any_data'
@@ -18,11 +18,11 @@ class ControllerStub extends Controller {
   }
 }
 
-describe('Controller', () => {
-  let sut: ControllerStub
+describe('BaseController', () => {
+  let sut: BaseControllerStub
 
   beforeEach(() => {
-    sut = new ControllerStub()
+    sut = new BaseControllerStub()
   })
 
   test('should return 400 if validation fails', async () => {

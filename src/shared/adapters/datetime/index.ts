@@ -1,1 +1,1 @@
-export * from './date-fns-handler'
+export * from './date-fns-adapter'

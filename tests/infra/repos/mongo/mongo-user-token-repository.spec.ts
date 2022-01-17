@@ -1,9 +1,9 @@
-import { MongoHelper, MongoUserToken } from '@/infra/repos/mongo'
+import { MongoHelper, MongoUserTokenRepository } from '@/infra/repos/mongo'
 
 import { Collection } from 'mongodb'
 
-describe('UserToken', () => {
-  let sut: MongoUserToken
+describe('MongoUserTokenRepository', () => {
+  let sut: MongoUserTokenRepository
   let userTokenCollection: Collection
 
   beforeAll(async () => {
@@ -17,7 +17,7 @@ describe('UserToken', () => {
   beforeEach(async () => {
     userTokenCollection = MongoHelper.getCollection('users')
     await userTokenCollection.deleteMany({})
-    sut = new MongoUserToken()
+    sut = new MongoUserTokenRepository()
   })
 
   describe('save', () => {

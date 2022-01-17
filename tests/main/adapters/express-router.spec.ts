@@ -1,5 +1,5 @@
 import { adaptExpressRoute } from '@/main/adapters'
-import { Controller } from '@/application/controllers'
+import { BaseController } from '@/application/controllers'
 
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { getMockReq, getMockRes } from '@jest-mock/express'
@@ -9,7 +9,7 @@ describe('ExpressRouter', () => {
   let req: Request
   let res: Response
   let next: NextFunction
-  let controller: MockProxy<Controller>
+  let controller: MockProxy<BaseController>
   let sut: RequestHandler
 
   beforeAll(() => {
