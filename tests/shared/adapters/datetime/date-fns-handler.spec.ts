@@ -1,4 +1,4 @@
-import { DateFnsHandler } from '@/infra/gateways'
+import { DateFnsHandler } from '@/shared/adapters/datetime'
 
 import * as datefns from 'date-fns'
 import MockDate from 'mockdate'
