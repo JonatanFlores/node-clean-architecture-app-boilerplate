@@ -1,4 +1,4 @@
-export * from './login-controller'
+export * from './sign-in-controller'
 export * from './signup-controller'
 export * from './refresh-token-controller'
 export * from './send-forgot-password-email-controller'

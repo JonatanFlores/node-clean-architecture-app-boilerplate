@@ -27,13 +27,13 @@ describe('Auth Routes', () => {
     await userCollection.deleteMany({})
   })
 
-  describe('POST /api/login', () => {
+  describe('POST /api/sign-in', () => {
     it('should return 200 with AccessToken', async () => {
       const passwordHashed = await hash(password, 12)
       await userCollection.insertOne({ email, password: passwordHashed })
 
       const { status, body } = await request(app)
-        .post('/api/login')
+        .post('/api/sign-in')
         .send({ email, password })
 
       expect(status).toBe(200)
@@ -44,7 +44,7 @@ describe('Auth Routes', () => {
 
     it('should return 401 with UnauthorizedError', async () => {
       const { status, body } = await request(app)
-        .post('/api/login')
+        .post('/api/sign-in')
         .send({ email, password })
 
       expect(status).toBe(401)
@@ -83,7 +83,7 @@ describe('Auth Routes', () => {
       const passwordHashed = await hash(password, 12)
       await userCollection.insertOne({ email, password: passwordHashed })
       const response = await request(app)
-        .post('/api/login')
+        .post('/api/sign-in')
         .send({ email, password })
       const { refreshToken } = response.body
 
@@ -113,7 +113,7 @@ describe('Auth Routes', () => {
       const passwordHashed = await hash(password, 12)
       await userCollection.insertOne({ email, password: passwordHashed })
       const response = await request(app)
-        .post('/api/login')
+        .post('/api/sign-in')
         .send({ email, password })
       const { accessToken } = response.body
 

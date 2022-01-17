@@ -1,14 +1,14 @@
-import { LoginController } from '@/application/controllers'
+import { SignInController } from '@/application/controllers'
 import { UnauthorizedError, ServerError } from '@/application/errors'
 import { AuthenticationError } from '@/domain/entities/errors'
 import { RequiredStringValidator } from '@/application/validation'
 
-describe('LoginController', () => {
+describe('SignInController', () => {
   let email: string
   let password: string
   let token: string
   let authentication: jest.Mock
-  let sut: LoginController
+  let sut: SignInController
 
   beforeAll(() => {
     email = 'any_email'
@@ -19,7 +19,7 @@ describe('LoginController', () => {
   })
 
   beforeEach(() => {
-    sut = new LoginController(authentication)
+    sut = new SignInController(authentication)
   })
 
   test('should build Validators correctly', async () => {

@@ -7,7 +7,7 @@ import { ValidationBuilder as Builder, Validator } from '@/application/validatio
 type HttpRequest = { email: string, password: string }
 type Model = Error | { email: string, accessToken: string, refreshToken: string }
 
-export class LoginController extends Controller {
+export class SignInController extends Controller {
   constructor (private readonly authentication: Authentication) {
     super()
   }
