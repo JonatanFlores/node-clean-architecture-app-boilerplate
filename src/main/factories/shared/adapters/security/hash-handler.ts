@@ -1,4 +1,4 @@
-import { BcryptHashHandler } from '@/infra/gateways'
+import { BcryptHashHandler } from '@/shared/adapters/security'
 
 export const makeBcryptHashHandler = (): BcryptHashHandler => {
   const salt = 12
