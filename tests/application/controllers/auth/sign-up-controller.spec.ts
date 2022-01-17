@@ -1,14 +1,14 @@
-import { SignupController } from '@/application/controllers'
+import { SignUpController } from '@/application/controllers'
 import { ServerError } from '@/application/errors'
 import { RequiredStringValidator } from '@/application/validation'
 import { EmailAlreadyInUseError } from '@/domain/entities/errors'
 
-describe('SignupController', () => {
+describe('SignUpController', () => {
   let email: string
   let password: string
   let accessToken: string
   let addUserAccount: jest.Mock
-  let sut: SignupController
+  let sut: SignUpController
 
   beforeAll(() => {
     email = 'any_email@mail.com'
@@ -19,7 +19,7 @@ describe('SignupController', () => {
   })
 
   beforeEach(() => {
-    sut = new SignupController(addUserAccount)
+    sut = new SignUpController(addUserAccount)
   })
 
   test('should build Validators correctly', () => {

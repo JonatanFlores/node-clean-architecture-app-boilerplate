@@ -52,10 +52,10 @@ describe('Auth Routes', () => {
     })
   })
 
-  describe('POST /api/signup', () => {
+  describe('POST /api/sign-up', () => {
     it('should return 200 with AccessToken', async () => {
       const { status, body } = await request(app)
-        .post('/api/signup')
+        .post('/api/sign-up')
         .send({ email, password })
 
       const createdAccount = await userCollection.findOne({ email })
@@ -70,7 +70,7 @@ describe('Auth Routes', () => {
       await userCollection.insertOne({ email, password: passwordHashed })
 
       const { status, body } = await request(app)
-        .post('/api/signup')
+        .post('/api/sign-up')
         .send({ email, password })
 
       expect(status).toBe(400)
