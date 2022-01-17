@@ -1,15 +1,11 @@
 import { SendForgotPasswordEmail, setupSendForgotPasswordEmail } from '@/domain/usecases'
-import { makeAmazonSesAdapter } from '@/main/factories/shared/adapters/mail'
 import { makeMongoUserAccountRepository, makeMongoUserTokenRepository } from '@/main/factories/infra/repos/mongo'
+import { makeMailerAdapter } from '@/main/factories/shared/adapters/mail'
 
 export const makeSendForgotPasswordEmail = (): SendForgotPasswordEmail => {
-  const to = 'any'
-  const body = 'any'
   return setupSendForgotPasswordEmail(
     makeMongoUserAccountRepository(),
     makeMongoUserTokenRepository(),
-    makeAmazonSesAdapter(),
-    to,
-    body
+    makeMailerAdapter()
   )
 }
