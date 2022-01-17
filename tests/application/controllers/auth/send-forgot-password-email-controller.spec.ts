@@ -10,15 +10,17 @@ class EmailValidatorSpy implements EmailValidatorContract {
 describe('SendForgotPasswordEmailController', () => {
   let email: string
   let emailValidator: EmailValidatorContract
+  let sendForgotPasswordEmail: jest.Mock
   let sut: SendForgotPasswordEmailController
 
   beforeAll(() => {
-    email = 'any_email'
+    email = 'any_email@mail.com'
+    sendForgotPasswordEmail = jest.fn()
     emailValidator = new EmailValidatorSpy()
   })
 
   beforeEach(() => {
-    sut = new SendForgotPasswordEmailController()
+    sut = new SendForgotPasswordEmailController(sendForgotPasswordEmail)
   })
 
   test('should build Validators correctly', () => {
@@ -28,5 +30,12 @@ describe('SendForgotPasswordEmailController', () => {
       new RequiredStringValidator(email, 'email'),
       new EmailValidator(email, emailValidator)
     ])
+  })
+
+  test('should call SendForgotPasswordEmail with correct input', async () => {
+    await sut.handle({ email })
+
+    expect(sendForgotPasswordEmail).toHaveBeenCalledWith({ email })
+    expect(sendForgotPasswordEmail).toHaveBeenCalledTimes(1)
   })
 })
