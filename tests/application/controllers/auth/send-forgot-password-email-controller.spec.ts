@@ -38,4 +38,13 @@ describe('SendForgotPasswordEmailController', () => {
     expect(sendForgotPasswordEmail).toHaveBeenCalledWith({ email })
     expect(sendForgotPasswordEmail).toHaveBeenCalledTimes(1)
   })
+
+  test('should return 200 if SendForgotPasswordEmail succeeds', async () => {
+    const httpResponse = await sut.handle({ email })
+
+    expect(httpResponse).toEqual({
+      statusCode: 200,
+      data: { message: 'Forgot password email was sent, please check your inbox' }
+    })
+  })
 })

@@ -13,7 +13,7 @@ export class SendForgotPasswordEmailController extends Controller {
 
   async perform ({ email }: HttpRequest): Promise<HttpResponse<Model>> {
     await this.sendForgotPasswordEmail({ email })
-    return ok({ message: 'OK' })
+    return ok({ message: 'Forgot password email was sent, please check your inbox' })
   }
 
   override buildValidators ({ email }: HttpRequest): Validator[] {
