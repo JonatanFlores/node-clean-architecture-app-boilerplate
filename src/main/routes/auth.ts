@@ -1,6 +1,12 @@
 import { adaptExpressRoute as adapt } from '@/main/adapters'
-import { makeSignInController, makeSignUpController, makeRefreshTokenController, makeMeController, makeSendForgotPasswordEmailController } from '@/main/factories/application/controller'
 import { auth } from '@/main/middlewares'
+import {
+  makeSignInController,
+  makeSignUpController,
+  makeRefreshTokenController,
+  makeMeController,
+  makeSendForgotPasswordEmailController
+} from '@/main/factories/application/controller'
 
 import { Router } from 'express'
 
