@@ -1,6 +1,8 @@
 import { Mail } from '@/domain/contracts/gateways'
 import { LoadUserAccount, SaveUserToken } from '@/domain/contracts/repos/mongo'
 
+import path from 'path'
+
 type Setup = (userAccount: LoadUserAccount, userToken: SaveUserToken, mail: Mail) => SendForgotPasswordEmail
 type Input = { email: string }
 export type SendForgotPasswordEmail = (input: Input) => Promise<void>
@@ -10,7 +12,24 @@ export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail
   if (userAccountData !== undefined) {
     const { id } = userAccountData
     const { token } = await userToken.save({ userId: id })
-    const body = `Password recovery request: ${token}`
-    await mail.send({ to: email, body })
+    const forgotPasswordTemplate = path.resolve(__dirname, '../../../views/forgot-password.hbs')
+    await mail.send({
+      from: {
+        name: 'AppName',
+        email: 'appname@mail.com'
+      },
+      to: {
+        name: userAccountData.email,
+        email: userAccountData.email
+      },
+      subject: '[AppName] Password Recovery',
+      templateData: {
+        file: forgotPasswordTemplate,
+        variables: {
+          name: email,
+          link: `http://localhost:3000/reset-password?token=${token}`
+        }
+      }
+    })
   }
 }

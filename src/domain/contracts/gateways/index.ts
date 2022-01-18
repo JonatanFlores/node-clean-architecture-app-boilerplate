@@ -1,4 +1,5 @@
 export * from './hash-handler'
 export * from './token-handler'
 export * from './mail-handler'
+export * from './mail-template'
 export * from './date-handler'
