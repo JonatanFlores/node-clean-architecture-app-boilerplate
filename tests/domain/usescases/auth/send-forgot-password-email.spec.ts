@@ -5,6 +5,8 @@ import { LoadUserAccount, SaveUserToken } from '@/domain/contracts/repos/mongo'
 import path from 'path'
 import { mock, MockProxy } from 'jest-mock-extended'
 
+jest.mock('path')
+
 describe('SendForgotPasswordEmail', () => {
   let id: string
   let email: string

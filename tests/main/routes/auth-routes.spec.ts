@@ -16,6 +16,7 @@ describe('Auth Routes', () => {
     email = 'any_email@mail.com'
     password = '123'
     await MongoHelper.connect(process.env.MONGO_URL as string)
+    jest.spyOn(console, 'log').mockImplementation(() => {})
   })
 
   afterAll(async () => {

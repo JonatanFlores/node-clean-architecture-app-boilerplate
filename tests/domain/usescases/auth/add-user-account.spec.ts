@@ -1,17 +1,23 @@
 import { AddUserAccount, setupAddUserAccount } from '@/domain/usecases'
-import { LoadUserAccount, SaveUserAccount } from '@/domain/contracts/repos/mongo'
-import { Hasher, TokenGenerator } from '@/domain/contracts/gateways'
+import { LoadUserAccount, SaveUserAccount, SaveUserToken } from '@/domain/contracts/repos/mongo'
+import { Hasher, Mail, TokenGenerator } from '@/domain/contracts/gateways'
 
+import path from 'path'
 import { MockProxy, mock } from 'jest-mock-extended'
+
+jest.mock('path')
 
 describe('AddUserAccount', () => {
   let id: string
   let email: string
   let password: string
   let passwordHashed: string
+  let isVerified: boolean
   let userAccountRepo: MockProxy<LoadUserAccount & SaveUserAccount>
+  let userTokenRepo: MockProxy<SaveUserToken>
   let hasher: MockProxy<Hasher>
   let token: MockProxy<TokenGenerator>
+  let mail: MockProxy<Mail>
   let sut: AddUserAccount
 
   beforeAll(() => {
@@ -19,16 +25,26 @@ describe('AddUserAccount', () => {
     email = 'any_mail@mail.com'
     password = 'any_password'
     passwordHashed = 'any_hashed_password'
+    isVerified = false
     userAccountRepo = mock()
     userAccountRepo.save.mockResolvedValue({ id, email, password })
+    userTokenRepo = mock()
+    userTokenRepo.save.mockResolvedValue({
+      id: 'user_token_id',
+      userId: 'user_id',
+      token: 'registration_token',
+      createdAt: 'any_created_at_date'
+    })
     hasher = mock()
     hasher.hash.mockResolvedValue(passwordHashed)
     token = mock()
     token.generate.mockResolvedValue('any_token')
+    mail = mock()
+    jest.spyOn(path, 'resolve').mockImplementation(() => 'any_file_path')
   })
 
   beforeEach(() => {
-    sut = setupAddUserAccount(userAccountRepo, hasher, token)
+    sut = setupAddUserAccount(userAccountRepo, userTokenRepo, hasher, token, mail)
   })
 
   test('should call LoadUserAccount with the correct input', async () => {
@@ -56,7 +72,7 @@ describe('AddUserAccount', () => {
   test('should call SaveUserAccount with the correct input', async () => {
     await sut({ email, password })
 
-    expect(userAccountRepo.save).toHaveBeenCalledWith({ email, password: passwordHashed })
+    expect(userAccountRepo.save).toHaveBeenCalledWith({ email, password: passwordHashed, isVerified })
     expect(userAccountRepo.save).toHaveBeenCalledTimes(1)
   })
 
@@ -66,9 +82,40 @@ describe('AddUserAccount', () => {
 
     await sut({ email, password })
 
-    expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: twoHoursInMs })
-    expect(token.generate).toHaveBeenCalledWith({ key: 'any_id', expirationInMs: thirtyDaysInMs })
+    expect(token.generate).toHaveBeenCalledWith({ key: id, expirationInMs: twoHoursInMs })
+    expect(token.generate).toHaveBeenCalledWith({ key: id, expirationInMs: thirtyDaysInMs })
     expect(token.generate).toHaveBeenCalledTimes(2)
+  })
+
+  test('should call SaveUserToken with the correct input', async () => {
+    await sut({ email, password })
+
+    expect(userTokenRepo.save).toHaveBeenCalledWith({ userId: id })
+    expect(userTokenRepo.save).toHaveBeenCalledTimes(1)
+  })
+
+  test('should call Mail with correct input', async () => {
+    await sut({ email, password })
+
+    expect(mail.send).toHaveBeenCalledTimes(1)
+    expect(mail.send).toHaveBeenCalledWith({
+      from: {
+        name: 'AppName',
+        email: 'appname@mail.com'
+      },
+      to: {
+        name: email,
+        email
+      },
+      subject: '[AppName] Create Account Confirmation',
+      templateData: {
+        file: 'any_file_path',
+        variables: {
+          email,
+          link: 'http://localhost:3000/confirm-registration?token=registration_token'
+        }
+      }
+    })
   })
 
   test('should return email, accessToken and refreshToken', async () => {

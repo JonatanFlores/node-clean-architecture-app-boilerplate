@@ -39,7 +39,7 @@ describe('MongoUserAccountRepository', () => {
 
   describe('save', () => {
     test('should return an account if save succeeds', async () => {
-      const accountData = { email: 'any_email', password: 'any_password' }
+      const accountData = { email: 'any_email', password: 'any_password', isVerified: false }
 
       const account = await sut.save({ ...accountData })
 

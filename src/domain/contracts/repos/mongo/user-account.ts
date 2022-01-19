@@ -16,7 +16,7 @@ export interface SaveUserAccount {
 }
 
 export namespace SaveUserAccount {
-  export type Input = { email: string, password: string }
+  export type Input = { email: string, password: string, isVerified: boolean }
   export type Output = { id: string, email: string, password: string }
 }
 
