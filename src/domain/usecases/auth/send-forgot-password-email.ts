@@ -26,7 +26,7 @@ export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail
       templateData: {
         file: forgotPasswordTemplate,
         variables: {
-          name: email,
+          email,
           link: `http://localhost:3000/reset-password?token=${token}`
         }
       }

@@ -56,7 +56,7 @@ describe('SendForgotPasswordEmail', () => {
       templateData: {
         file: 'any_file_path',
         variables: {
-          name: email,
+          email,
           link: `http://localhost:3000/reset-password?token=${token}`
         }
       }
