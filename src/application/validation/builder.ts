@@ -18,8 +18,8 @@ export class ValidationBuilder {
   }
 
   email (): ValidationBuilder {
-    const validator = new EmailValidatorAdapter()
-    const emailValidator = new EmailValidator(this.value, validator)
+    const emailValidatorAdapter = new EmailValidatorAdapter()
+    const emailValidator = new EmailValidator(this.value, emailValidatorAdapter)
     this.validators.push(emailValidator)
     return this
   }
