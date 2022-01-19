@@ -12,6 +12,7 @@ describe('SendForgotPasswordEmail', () => {
   let email: string
   let password: string
   let token: string
+  let env: { [key: string]: any }
   let userAccount: MockProxy<LoadUserAccount>
   let userToken: MockProxy<SaveUserToken>
   let mail: MockProxy<Mail>
@@ -22,6 +23,7 @@ describe('SendForgotPasswordEmail', () => {
     email = 'any_email'
     password = 'any_password'
     token = 'any_token'
+    env = { frontendUrl: 'http://localhost:3000' }
     userAccount = mock()
     userAccount.load.mockResolvedValue({ id, email, password })
     userToken = mock()
@@ -31,7 +33,7 @@ describe('SendForgotPasswordEmail', () => {
   })
 
   beforeEach(() => {
-    sut = setupSendForgotPasswordEmail(userAccount, userToken, mail)
+    sut = setupSendForgotPasswordEmail(userAccount, userToken, env, mail)
   })
 
   test('should call LoadUserAccount with correct input', async () => {
@@ -59,7 +61,7 @@ describe('SendForgotPasswordEmail', () => {
         file: 'any_file_path',
         variables: {
           email,
-          link: `http://localhost:3000/reset-password?token=${token}`
+          link: `${String(env.frontendUrl)}/reset-password?token=${token}`
         }
       }
     })

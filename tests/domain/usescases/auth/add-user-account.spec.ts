@@ -13,6 +13,7 @@ describe('AddUserAccount', () => {
   let password: string
   let passwordHashed: string
   let isVerified: boolean
+  let env: { [key: string]: any }
   let userAccountRepo: MockProxy<LoadUserAccount & SaveUserAccount>
   let userTokenRepo: MockProxy<SaveUserToken>
   let hasher: MockProxy<Hasher>
@@ -26,6 +27,7 @@ describe('AddUserAccount', () => {
     password = 'any_password'
     passwordHashed = 'any_hashed_password'
     isVerified = false
+    env = { frontendUrl: 'http://localhost:3000' }
     userAccountRepo = mock()
     userAccountRepo.save.mockResolvedValue({ id, email, password })
     userTokenRepo = mock()
@@ -44,7 +46,7 @@ describe('AddUserAccount', () => {
   })
 
   beforeEach(() => {
-    sut = setupAddUserAccount(userAccountRepo, userTokenRepo, hasher, token, mail)
+    sut = setupAddUserAccount(userAccountRepo, userTokenRepo, env, hasher, token, mail)
   })
 
   test('should call LoadUserAccount with the correct input', async () => {
@@ -112,7 +114,7 @@ describe('AddUserAccount', () => {
         file: 'any_file_path',
         variables: {
           email,
-          link: 'http://localhost:3000/confirm-registration?token=registration_token'
+          link: `${String(env.frontendUrl)}/confirm-registration?token=registration_token`
         }
       }
     })

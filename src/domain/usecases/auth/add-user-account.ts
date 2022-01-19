@@ -5,12 +5,13 @@ import { Hasher, Mail, TokenGenerator } from '@/domain/contracts/gateways'
 
 import path from 'path'
 
-type Setup = (userAccountRepo: LoadUserAccount & SaveUserAccount, userTokenRepo: SaveUserToken, hasher: Hasher, token: TokenGenerator, mail: Mail) => AddUserAccount
+type Setup = (userAccountRepo: LoadUserAccount & SaveUserAccount, userTokenRepo: SaveUserToken, env: Env, hasher: Hasher, token: TokenGenerator, mail: Mail) => AddUserAccount
+type Env = { [key: string]: any }
 type Input = { email: string, password: string }
 type Output = { email: string, accessToken: string, refreshToken: string }
 export type AddUserAccount = (input: Input) => Promise<Output>
 
-export const setupAddUserAccount: Setup = (userAccountRepo, userTokenRepo, hasher, token, mail) => async ({ email, password }) => {
+export const setupAddUserAccount: Setup = (userAccountRepo, userTokenRepo, env, hasher, token, mail) => async ({ email, password }) => {
   const userAccount = await userAccountRepo.load({ email })
   if (userAccount !== undefined) throw new EmailAlreadyInUseError()
   const passwordHashed = await hasher.hash({ value: password })
@@ -34,7 +35,7 @@ export const setupAddUserAccount: Setup = (userAccountRepo, userTokenRepo, hashe
       file: registerUserTemplate,
       variables: {
         email,
-        link: `http://localhost:3000/confirm-registration?token=${String(registerToken)}`
+        link: `${String(env.frontendUrl)}/confirm-registration?token=${String(registerToken)}`
       }
     }
   })

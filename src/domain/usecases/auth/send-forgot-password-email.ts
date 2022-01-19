@@ -3,11 +3,12 @@ import { LoadUserAccount, SaveUserToken } from '@/domain/contracts/repos/mongo'
 
 import path from 'path'
 
-type Setup = (userAccount: LoadUserAccount, userToken: SaveUserToken, mail: Mail) => SendForgotPasswordEmail
+type Setup = (userAccount: LoadUserAccount, userToken: SaveUserToken, env: Env, mail: Mail) => SendForgotPasswordEmail
+type Env = { [key: string]: any }
 type Input = { email: string }
 export type SendForgotPasswordEmail = (input: Input) => Promise<void>
 
-export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail) => async ({ email }) => {
+export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, env, mail) => async ({ email }) => {
   const userAccountData = await userAccount.load({ email })
   if (userAccountData !== undefined) {
     const { id } = userAccountData
@@ -27,7 +28,7 @@ export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail
         file: forgotPasswordTemplate,
         variables: {
           email,
-          link: `http://localhost:3000/reset-password?token=${token}`
+          link: `${String(env.frontendUrl)}/reset-password?token=${token}`
         }
       }
     })
