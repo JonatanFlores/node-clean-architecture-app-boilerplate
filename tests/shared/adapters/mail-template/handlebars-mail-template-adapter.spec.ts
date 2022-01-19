@@ -14,8 +14,9 @@ describe('HandlebarsMailTemplateAdapter', () => {
   beforeAll(() => {
     file = 'any_file'
     variables = { any: 'any' }
-    fakeHandlebars = handlebars as jest.Mocked<typeof handlebars>
     parseTemplateSpy = jest.fn()
+    parseTemplateSpy.mockReturnValue('any_template')
+    fakeHandlebars = handlebars as jest.Mocked<typeof handlebars>
     fakeHandlebars.compile.mockReturnValue(parseTemplateSpy)
   })
 
@@ -35,5 +36,11 @@ describe('HandlebarsMailTemplateAdapter', () => {
 
     expect(parseTemplateSpy).toHaveBeenCalledWith(variables)
     expect(parseTemplateSpy).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return the parsed template', async () => {
+    const result = await sut.parse({ file, variables })
+
+    expect(result).toEqual('any_template')
   })
 })
