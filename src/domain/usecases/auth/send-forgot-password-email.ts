@@ -12,7 +12,7 @@ export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, mail
   if (userAccountData !== undefined) {
     const { id } = userAccountData
     const { token } = await userToken.save({ userId: id })
-    const forgotPasswordTemplate = path.resolve(__dirname, '../../../views/forgot-password.hbs')
+    const forgotPasswordTemplate = path.resolve(__dirname, '../../../main/views/forgot-password.hbs')
     await mail.send({
       from: {
         name: 'AppName',
