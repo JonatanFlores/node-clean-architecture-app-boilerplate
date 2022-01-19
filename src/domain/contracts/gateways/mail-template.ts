@@ -3,6 +3,6 @@ export interface MailTemplate {
 }
 
 export namespace MailTemplate {
-  export type Input = { file: string, variables: { [key: string]: string | number } }
+  export type Input = { file: string, variables?: { [key: string]: string | number } }
   export type Output = string
 }
