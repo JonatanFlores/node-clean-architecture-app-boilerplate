@@ -1,12 +1,15 @@
 import { HandlebarsMailTemplateAdapter } from '@/shared/adapters/mail-template'
 
+import fs from 'fs'
 import * as handlebars from 'handlebars'
 
 jest.mock('handlebars')
+jest.mock('fs/promises')
 
 describe('HandlebarsMailTemplateAdapter', () => {
   let file: string
   let variables: { [key: string]: number | string }
+  let readFileSpy: jest.Mock
   let sut: HandlebarsMailTemplateAdapter
   let parseTemplateSpy: jest.Mock
   let fakeHandlebars: jest.Mocked<typeof handlebars>
@@ -14,20 +17,28 @@ describe('HandlebarsMailTemplateAdapter', () => {
   beforeAll(() => {
     file = 'any_file'
     variables = { any: 'any' }
-    parseTemplateSpy = jest.fn()
-    parseTemplateSpy.mockReturnValue('any_template')
+    readFileSpy = jest.fn().mockResolvedValue('any_file_content_template')
+    parseTemplateSpy = jest.fn().mockReturnValue('any_template')
     fakeHandlebars = handlebars as jest.Mocked<typeof handlebars>
     fakeHandlebars.compile.mockReturnValue(parseTemplateSpy)
+    jest.spyOn(fs.promises, 'readFile').mockImplementation(readFileSpy)
   })
 
   beforeEach(() => {
     sut = new HandlebarsMailTemplateAdapter()
   })
 
+  test('should call readFile with correct file', async () => {
+    await sut.parse({ file, variables })
+
+    expect(readFileSpy).toHaveBeenCalledWith(file, { encoding: 'utf-8' })
+    expect(readFileSpy).toHaveBeenCalledTimes(1)
+  })
+
   test('should call compile with correct template', async () => {
     await sut.parse({ file, variables })
 
-    expect(fakeHandlebars.compile).toHaveBeenCalledWith(file)
+    expect(fakeHandlebars.compile).toHaveBeenCalledWith('any_file_content_template')
     expect(fakeHandlebars.compile).toHaveBeenCalledTimes(1)
   })
 
