@@ -7,6 +7,8 @@ import { Collection, ObjectId } from 'mongodb'
 import { hash } from 'bcrypt'
 import { sign } from 'jsonwebtoken'
 
+jest.mock('@/shared/adapters/mail/ethereal-mail-adapter')
+
 describe('Auth Routes', () => {
   let email: string
   let password: string
