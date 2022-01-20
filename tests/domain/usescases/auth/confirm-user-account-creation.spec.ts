@@ -15,11 +15,20 @@ export class ConfirmUserAccountTokenNotFoundError extends Error {
   }
 }
 
+export class ConfirmUserAccountTokenExpiredError extends Error {
+  constructor () {
+    super('Cannot activate user account, because activation token is already expired')
+    this.name = 'ConfirmUserAccountTokenExpiredError'
+  }
+}
+
 export const setupConfirmUserAccountCreation: Setup = (userTokenRepo, dateAdapter) => async ({ token }) => {
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ConfirmUserAccountTokenNotFoundError()
   const { createdAt } = userToken
-  dateAdapter.diffInHours(new Date(createdAt), new Date())
+  const tokenExpirationLimitInHours = 2
+  const tokenCreationInHours = dateAdapter.diffInHours(new Date(createdAt), new Date())
+  if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ConfirmUserAccountTokenExpiredError()
 }
 
 describe('ConfirmUserAccountCreation', () => {
@@ -80,5 +89,13 @@ describe('ConfirmUserAccountCreation', () => {
       threeHoursAfterCreatedAt
     )
     MockDate.set(previousDate)
+  })
+
+  test('should not be able to activate account after 2 hours', async () => {
+    dateAdapter.diffInHours.mockReturnValueOnce(3)
+
+    const promise = sut({ token })
+
+    await expect(promise).rejects.toThrow(new ConfirmUserAccountTokenExpiredError())
   })
 })
