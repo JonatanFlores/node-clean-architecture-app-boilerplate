@@ -1,11 +1,11 @@
 import { DateDifferenceInHours } from '@/domain/contracts/gateways'
-import { LoadUser, LoadUserToken } from '@/domain/contracts/repos/mongo'
+import { ChangeUserAccountVerificationStatus, LoadUser, LoadUserToken } from '@/domain/contracts/repos/mongo'
 import { UserNotFoundError } from '@/domain/entities/errors'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 import MockDate from 'mockdate'
 
-type Setup = (userRepo: LoadUser, userTokenRepo: LoadUserToken, dateAdapter: DateDifferenceInHours) => ConfirmUserAccountCreation
+type Setup = (userRepo: LoadUser, userAccountRepo: ChangeUserAccountVerificationStatus, userTokenRepo: LoadUserToken, dateAdapter: DateDifferenceInHours) => ConfirmUserAccountCreation
 type Input = { token: string }
 export type ConfirmUserAccountCreation = (input: Input) => Promise<void>
 
@@ -23,7 +23,7 @@ export class ConfirmUserAccountTokenExpiredError extends Error {
   }
 }
 
-export const setupConfirmUserAccountCreation: Setup = (userRepo, userTokenRepo, dateAdapter) => async ({ token }) => {
+export const setupConfirmUserAccountCreation: Setup = (userRepo, userAccountRepo, userTokenRepo, dateAdapter) => async ({ token }) => {
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ConfirmUserAccountTokenNotFoundError()
   const { userId, createdAt } = userToken
@@ -32,12 +32,15 @@ export const setupConfirmUserAccountCreation: Setup = (userRepo, userTokenRepo, 
   if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ConfirmUserAccountTokenExpiredError()
   const user = await userRepo.load({ id: userId })
   if (user === undefined) throw new UserNotFoundError()
+  const { id } = user
+  await userAccountRepo.changeIsVerified({ id, isVerified: true })
 }
 
 describe('ConfirmUserAccountCreation', () => {
   let token: string
   let createdAt: string
   let userRepo: MockProxy<LoadUser>
+  let userAccountRepo: MockProxy<ChangeUserAccountVerificationStatus>
   let userTokenRepo: MockProxy<LoadUserToken>
   let dateAdapter: MockProxy<DateDifferenceInHours>
   let sut: ConfirmUserAccountCreation
@@ -51,6 +54,7 @@ describe('ConfirmUserAccountCreation', () => {
       id: 'any_user_id',
       email: 'any_email'
     })
+    userAccountRepo = mock()
     userTokenRepo = mock()
     userTokenRepo.load.mockResolvedValue({
       id: 'any_user_token_id',
@@ -67,7 +71,7 @@ describe('ConfirmUserAccountCreation', () => {
   })
 
   beforeEach(() => {
-    sut = setupConfirmUserAccountCreation(userRepo, userTokenRepo, dateAdapter)
+    sut = setupConfirmUserAccountCreation(userRepo, userAccountRepo, userTokenRepo, dateAdapter)
   })
 
   test('should call LoadUserToken with correct input', async () => {
@@ -121,5 +125,15 @@ describe('ConfirmUserAccountCreation', () => {
     const promise = sut({ token })
 
     await expect(promise).rejects.toThrow(new UserNotFoundError())
+  })
+
+  test('should call ChangeUserAccountVerificationStatus with the correct input', async () => {
+    await sut({ token })
+
+    expect(userAccountRepo.changeIsVerified).toHaveBeenCalledTimes(1)
+    expect(userAccountRepo.changeIsVerified).toHaveBeenCalledWith({
+      id: 'any_user_id',
+      isVerified: true
+    })
   })
 })
