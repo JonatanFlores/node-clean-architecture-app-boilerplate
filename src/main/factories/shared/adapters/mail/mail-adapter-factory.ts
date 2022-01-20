@@ -1,10 +1,13 @@
 import { makeAmazonSesAdapter, makeEtherealMailAdapter } from '@/main/factories/shared/adapters/mail'
-import { env } from '@/main/config/env'
 import { Mail } from '@/domain/contracts/gateways'
+import { env } from '@/main/config/env'
+
+const mailAdaptersFactories: { [key: string]: () => Mail } = {
+  ses: makeAmazonSesAdapter,
+  ethereal: makeEtherealMailAdapter
+}
 
 export const makeMailerAdapter = (): Mail => {
-  if (env?.appEnv?.toLowerCase() === 'production') {
-    return makeAmazonSesAdapter()
-  }
-  return makeEtherealMailAdapter()
+  const mailAdapterFactory = mailAdaptersFactories[env.mail.driver]
+  return mailAdapterFactory()
 }
