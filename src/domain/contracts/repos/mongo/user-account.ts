@@ -28,3 +28,12 @@ export namespace ChangeUserAccountPassword {
   export type Input = { id: string, password: string }
   export type Output = { id: string, email: string }
 }
+
+export interface ChangeUserAccountVerificationStatus {
+  changeIsVerified: (input: ChangeUserAccountVerificationStatus.Input) => Promise<ChangeUserAccountVerificationStatus.Output>
+}
+
+export namespace ChangeUserAccountVerificationStatus {
+  export type Input = { id: string, isVerified: boolean }
+  export type Output = { id: string, email: string, isVerified: boolean }
+}

@@ -62,4 +62,19 @@ describe('MongoUserAccountRepository', () => {
       })
     })
   })
+
+  describe('changeIsVerified', () => {
+    test('should return an account with the new verification status if it succeeds', async () => {
+      const accountData = { email: 'any_email', isVerified: false }
+      const { insertedId: id } = await userCollection.insertOne({ ...accountData })
+
+      const account = await sut.changeIsVerified({ id: id.toHexString(), isVerified: true })
+
+      expect(account).toEqual({
+        id: id.toHexString(),
+        email: 'any_email',
+        isVerified: true
+      })
+    })
+  })
 })

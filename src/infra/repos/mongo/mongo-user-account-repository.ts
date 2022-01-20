@@ -1,9 +1,14 @@
 import { MongoHelper } from '@/infra/repos/mongo'
-import { LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword } from '@/domain/contracts/repos/mongo'
+import {
+  LoadUserAccount,
+  SaveUserAccount,
+  ChangeUserAccountPassword,
+  ChangeUserAccountVerificationStatus
+} from '@/domain/contracts/repos/mongo'
 
 import { ObjectId } from 'mongodb'
 
-export class MongoUserAccountRepository implements LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword {
+export class MongoUserAccountRepository implements LoadUserAccount, SaveUserAccount, ChangeUserAccountPassword, ChangeUserAccountVerificationStatus {
   async load ({ email }: LoadUserAccount.Input): Promise<LoadUserAccount.Output> {
     const userCollection = MongoHelper.getCollection('users')
     const account = await userCollection.findOne(
@@ -28,6 +33,16 @@ export class MongoUserAccountRepository implements LoadUserAccount, SaveUserAcco
     const updatedUserAccount = await userCollection.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: { password } },
+      { returnDocument: 'after' }
+    )
+    return MongoHelper.map(updatedUserAccount.value)
+  }
+
+  async changeIsVerified ({ id, isVerified }: ChangeUserAccountVerificationStatus.Input): Promise<ChangeUserAccountVerificationStatus.Output> {
+    const userCollection = MongoHelper.getCollection('users')
+    const updatedUserAccount = await userCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { isVerified } },
       { returnDocument: 'after' }
     )
     return MongoHelper.map(updatedUserAccount.value)
