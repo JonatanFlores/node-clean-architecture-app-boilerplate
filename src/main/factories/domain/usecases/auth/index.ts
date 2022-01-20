@@ -1,5 +1,6 @@
 export * from './authentication-factory'
 export * from './refresh-token-factory'
 export * from './add-user-account-factory'
+export * from './confirm-user-account-creation-factory'
 export * from './send-forgot-password-email-factory'
 export * from './load-logged-in-user-factory'
