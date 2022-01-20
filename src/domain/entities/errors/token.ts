@@ -11,3 +11,17 @@ export class ResetPasswordTokenExpiredError extends Error {
     this.name = 'ResetPasswordTokenExpiredError'
   }
 }
+
+export class ConfirmUserAccountTokenNotFoundError extends Error {
+  constructor () {
+    super('User account confirmation token is invalid')
+    this.name = 'ConfirmUserAccountTokenNotFoundError'
+  }
+}
+
+export class ConfirmUserAccountTokenExpiredError extends Error {
+  constructor () {
+    super('Cannot activate user account, because activation token is already expired')
+    this.name = 'ConfirmUserAccountTokenExpiredError'
+  }
+}

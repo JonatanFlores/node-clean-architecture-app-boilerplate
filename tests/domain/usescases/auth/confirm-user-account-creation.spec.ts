@@ -1,40 +1,10 @@
 import { DateDifferenceInHours } from '@/domain/contracts/gateways'
 import { ChangeUserAccountVerificationStatus, LoadUser, LoadUserToken } from '@/domain/contracts/repos/mongo'
-import { UserNotFoundError } from '@/domain/entities/errors'
+import { ConfirmUserAccountTokenExpiredError, ConfirmUserAccountTokenNotFoundError, UserNotFoundError } from '@/domain/entities/errors'
+import { ConfirmUserAccountCreation, setupConfirmUserAccountCreation } from '@/domain/usecases'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 import MockDate from 'mockdate'
-
-type Setup = (userRepo: LoadUser, userAccountRepo: ChangeUserAccountVerificationStatus, userTokenRepo: LoadUserToken, dateAdapter: DateDifferenceInHours) => ConfirmUserAccountCreation
-type Input = { token: string }
-export type ConfirmUserAccountCreation = (input: Input) => Promise<void>
-
-export class ConfirmUserAccountTokenNotFoundError extends Error {
-  constructor () {
-    super('User account confirmation token is invalid')
-    this.name = 'ConfirmUserAccountTokenNotFoundError'
-  }
-}
-
-export class ConfirmUserAccountTokenExpiredError extends Error {
-  constructor () {
-    super('Cannot activate user account, because activation token is already expired')
-    this.name = 'ConfirmUserAccountTokenExpiredError'
-  }
-}
-
-export const setupConfirmUserAccountCreation: Setup = (userRepo, userAccountRepo, userTokenRepo, dateAdapter) => async ({ token }) => {
-  const userToken = await userTokenRepo.load({ token })
-  if (userToken === undefined) throw new ConfirmUserAccountTokenNotFoundError()
-  const { userId, createdAt } = userToken
-  const tokenExpirationLimitInHours = 2
-  const tokenCreationInHours = dateAdapter.diffInHours(new Date(createdAt), new Date())
-  if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ConfirmUserAccountTokenExpiredError()
-  const user = await userRepo.load({ id: userId })
-  if (user === undefined) throw new UserNotFoundError()
-  const { id } = user
-  await userAccountRepo.changeIsVerified({ id, isVerified: true })
-}
 
 describe('ConfirmUserAccountCreation', () => {
   let token: string
