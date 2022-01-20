@@ -1,5 +1,6 @@
 import { DateDifferenceInHours } from '@/domain/contracts/gateways'
 import { LoadUser, LoadUserToken } from '@/domain/contracts/repos/mongo'
+import { UserNotFoundError } from '@/domain/entities/errors'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 import MockDate from 'mockdate'
@@ -29,7 +30,8 @@ export const setupConfirmUserAccountCreation: Setup = (userRepo, userTokenRepo, 
   const tokenExpirationLimitInHours = 2
   const tokenCreationInHours = dateAdapter.diffInHours(new Date(createdAt), new Date())
   if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ConfirmUserAccountTokenExpiredError()
-  await userRepo.load({ id: userId })
+  const user = await userRepo.load({ id: userId })
+  if (user === undefined) throw new UserNotFoundError()
 }
 
 describe('ConfirmUserAccountCreation', () => {
@@ -45,6 +47,10 @@ describe('ConfirmUserAccountCreation', () => {
     token = 'any_token'
     createdAt = (new Date(2022, 0, 1, 0)).toISOString()
     userRepo = mock()
+    userRepo.load.mockResolvedValue({
+      id: 'any_user_id',
+      email: 'any_email'
+    })
     userTokenRepo = mock()
     userTokenRepo.load.mockResolvedValue({
       id: 'any_user_token_id',
@@ -107,5 +113,13 @@ describe('ConfirmUserAccountCreation', () => {
 
     expect(userRepo.load).toHaveBeenCalledWith({ id: 'any_user_id' })
     expect(userRepo.load).toHaveBeenCalledTimes(1)
+  })
+
+  test('should throw UserNotFoundError if LoadUser returns undefined', async () => {
+    userRepo.load.mockResolvedValueOnce(undefined)
+
+    const promise = sut({ token })
+
+    await expect(promise).rejects.toThrow(new UserNotFoundError())
   })
 })
