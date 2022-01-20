@@ -1,10 +1,10 @@
 import { DateDifferenceInHours } from '@/domain/contracts/gateways'
-import { LoadUserToken } from '@/domain/contracts/repos/mongo'
+import { LoadUser, LoadUserToken } from '@/domain/contracts/repos/mongo'
 
 import { mock, MockProxy } from 'jest-mock-extended'
 import MockDate from 'mockdate'
 
-type Setup = (userTokenRepo: LoadUserToken, dateAdapter: DateDifferenceInHours) => ConfirmUserAccountCreation
+type Setup = (userRepo: LoadUser, userTokenRepo: LoadUserToken, dateAdapter: DateDifferenceInHours) => ConfirmUserAccountCreation
 type Input = { token: string }
 export type ConfirmUserAccountCreation = (input: Input) => Promise<void>
 
@@ -22,18 +22,20 @@ export class ConfirmUserAccountTokenExpiredError extends Error {
   }
 }
 
-export const setupConfirmUserAccountCreation: Setup = (userTokenRepo, dateAdapter) => async ({ token }) => {
+export const setupConfirmUserAccountCreation: Setup = (userRepo, userTokenRepo, dateAdapter) => async ({ token }) => {
   const userToken = await userTokenRepo.load({ token })
   if (userToken === undefined) throw new ConfirmUserAccountTokenNotFoundError()
-  const { createdAt } = userToken
+  const { userId, createdAt } = userToken
   const tokenExpirationLimitInHours = 2
   const tokenCreationInHours = dateAdapter.diffInHours(new Date(createdAt), new Date())
   if (tokenCreationInHours > tokenExpirationLimitInHours) throw new ConfirmUserAccountTokenExpiredError()
+  await userRepo.load({ id: userId })
 }
 
 describe('ConfirmUserAccountCreation', () => {
   let token: string
   let createdAt: string
+  let userRepo: MockProxy<LoadUser>
   let userTokenRepo: MockProxy<LoadUserToken>
   let dateAdapter: MockProxy<DateDifferenceInHours>
   let sut: ConfirmUserAccountCreation
@@ -42,6 +44,7 @@ describe('ConfirmUserAccountCreation', () => {
     MockDate.set(new Date())
     token = 'any_token'
     createdAt = (new Date(2022, 0, 1, 0)).toISOString()
+    userRepo = mock()
     userTokenRepo = mock()
     userTokenRepo.load.mockResolvedValue({
       id: 'any_user_token_id',
@@ -58,7 +61,7 @@ describe('ConfirmUserAccountCreation', () => {
   })
 
   beforeEach(() => {
-    sut = setupConfirmUserAccountCreation(userTokenRepo, dateAdapter)
+    sut = setupConfirmUserAccountCreation(userRepo, userTokenRepo, dateAdapter)
   })
 
   test('should call LoadUserToken with correct input', async () => {
@@ -97,5 +100,12 @@ describe('ConfirmUserAccountCreation', () => {
     const promise = sut({ token })
 
     await expect(promise).rejects.toThrow(new ConfirmUserAccountTokenExpiredError())
+  })
+
+  test('should call LoadUser with correct input', async () => {
+    await sut({ token })
+
+    expect(userRepo.load).toHaveBeenCalledWith({ id: 'any_user_id' })
+    expect(userRepo.load).toHaveBeenCalledTimes(1)
   })
 })
