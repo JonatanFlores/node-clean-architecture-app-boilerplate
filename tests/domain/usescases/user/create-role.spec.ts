@@ -1,4 +1,4 @@
-import { CreateRole, setupCreateRole } from '@/domain/usecases/user'
+import { CreateRole, setupCreateRole } from '@/domain/usecases'
 import { LoadRoleByName, SaveRole } from '@/domain/contracts/repos/mongo'
 import { RoleAlreadyExistsError } from '@/domain/entities/errors'
 
