@@ -42,5 +42,11 @@ describe('MongoRoleRepository', () => {
 
       expect(role).toEqual({ id, ...roleData })
     })
+
+    test('should return undefined if role does not exists', async () => {
+      const role = await sut.loadByName('non_existing_role')
+
+      expect(role).toBeUndefined()
+    })
   })
 })
