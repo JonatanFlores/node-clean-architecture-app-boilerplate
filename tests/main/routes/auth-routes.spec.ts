@@ -8,6 +8,7 @@ import { hash } from 'bcrypt'
 import { sign } from 'jsonwebtoken'
 
 jest.mock('@/shared/adapters/mail/ethereal-mail-adapter')
+jest.mock('@/shared/adapters/mail/amazon-ses-adapter')
 
 describe('Auth Routes', () => {
   let email: string

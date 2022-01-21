@@ -27,7 +27,18 @@ describe('AddUserAccount', () => {
     password = 'any_password'
     passwordHashed = 'any_hashed_password'
     isVerified = false
-    env = { frontendUrl: 'http://localhost:3000' }
+    env = {
+      appName: 'AppName',
+      frontendUrl: 'http://localhost:3000',
+      mail: {
+        defaults: {
+          from: {
+            name: 'AppName',
+            email: 'appname@mail.com'
+          }
+        }
+      }
+    }
     userAccountRepo = mock()
     userAccountRepo.save.mockResolvedValue({ id, email, password })
     userTokenRepo = mock()

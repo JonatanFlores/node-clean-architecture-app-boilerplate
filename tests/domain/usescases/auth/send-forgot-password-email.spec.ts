@@ -23,7 +23,18 @@ describe('SendForgotPasswordEmail', () => {
     email = 'any_email'
     password = 'any_password'
     token = 'any_token'
-    env = { frontendUrl: 'http://localhost:3000' }
+    env = {
+      appName: 'AppName',
+      frontendUrl: 'http://localhost:3000',
+      mail: {
+        defaults: {
+          from: {
+            name: 'AppName',
+            email: 'appname@mail.com'
+          }
+        }
+      }
+    }
     userAccount = mock()
     userAccount.load.mockResolvedValue({ id, email, password })
     userToken = mock()

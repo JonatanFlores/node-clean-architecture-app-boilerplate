@@ -16,14 +16,14 @@ export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, env,
     const forgotPasswordTemplate = path.resolve(__dirname, '../../../main/views/forgot-password.hbs')
     await mail.send({
       from: {
-        name: 'AppName',
-        email: 'appname@mail.com'
+        name: env.mail.defaults.from.name,
+        email: env.mail.defaults.from.email
       },
       to: {
         name: userAccountData.email,
         email: userAccountData.email
       },
-      subject: '[AppName] Password Recovery',
+      subject: `[${String(env.appName)}] Password Recovery`,
       templateData: {
         file: forgotPasswordTemplate,
         variables: {

@@ -23,14 +23,14 @@ export const setupAddUserAccount: Setup = (userAccountRepo, userTokenRepo, env, 
   const registerUserTemplate = path.resolve(__dirname, '../../../main/views/register-user-confirmation.hbs')
   await mail.send({
     from: {
-      name: 'AppName',
-      email: 'appname@mail.com'
+      name: env.mail.defaults.from.name,
+      email: env.mail.defaults.from.email
     },
     to: {
       name: email,
       email
     },
-    subject: '[AppName] Create Account Confirmation',
+    subject: `[${String(env.appName)}] Create Account Confirmation`,
     templateData: {
       file: registerUserTemplate,
       variables: {
