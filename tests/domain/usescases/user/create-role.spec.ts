@@ -1,12 +1,13 @@
 import { mock, MockProxy } from 'jest-mock-extended'
 
-type Setup = (roleRepo: LoadRoleByName) => CreateRole
+type Setup = (roleRepo: LoadRoleByName & SaveRole) => CreateRole
 type Input = { name: string, description: string }
 export type CreateRole = (input: Input) => Promise<void>
 
-export const setupCreateRole: Setup = (roleRepo) => async ({ name }) => {
+export const setupCreateRole: Setup = (roleRepo) => async ({ name, description }) => {
   const role = await roleRepo.loadByName(name)
   if (role !== undefined) throw new RoleAlreadyExistsError(name)
+  await roleRepo.save({ name, description })
 }
 
 export interface LoadRoleByName {
@@ -16,6 +17,14 @@ export interface LoadRoleByName {
 export namespace LoadRoleByName {
   export type Input = string
   export type Output = { id: string, name: string, description: string }
+}
+
+export interface SaveRole {
+  save: (input: SaveRole.Input) => Promise<void>
+}
+
+export namespace SaveRole {
+  export type Input = { name: string, description: string }
 }
 
 export class RoleAlreadyExistsError extends Error {
@@ -29,7 +38,7 @@ describe('CreateRole', () => {
   let name: string
   let description: string
   let roleData: LoadRoleByName.Output
-  let roleRepo: MockProxy<LoadRoleByName>
+  let roleRepo: MockProxy<LoadRoleByName & SaveRole>
   let sut: CreateRole
 
   beforeAll(() => {
@@ -60,5 +69,12 @@ describe('CreateRole', () => {
     const promise = sut({ name, description })
 
     await expect(promise).rejects.toThrow(new RoleAlreadyExistsError('any-role'))
+  })
+
+  test('should call SaveRole with correct input', async () => {
+    await sut({ name, description })
+
+    expect(roleRepo.save).toHaveBeenCalledWith({ name, description })
+    expect(roleRepo.save).toHaveBeenCalledTimes(1)
   })
 })
