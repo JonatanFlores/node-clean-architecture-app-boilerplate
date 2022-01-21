@@ -77,4 +77,13 @@ describe('CreateRole', () => {
     expect(roleRepo.save).toHaveBeenCalledWith({ name, description })
     expect(roleRepo.save).toHaveBeenCalledTimes(1)
   })
+
+  test('should rethrow if SaveRole throws', async () => {
+    const error = new Error('save_role_error')
+    roleRepo.save.mockRejectedValueOnce(error)
+
+    const promise = sut({ name, description })
+
+    await expect(promise).rejects.toThrow(error)
+  })
 })
