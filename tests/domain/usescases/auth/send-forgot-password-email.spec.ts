@@ -72,6 +72,7 @@ describe('SendForgotPasswordEmail', () => {
         file: 'any_file_path',
         variables: {
           email,
+          appName: 'AppName',
           link: `${String(env.frontendUrl)}/reset-password?token=${token}`
         }
       }

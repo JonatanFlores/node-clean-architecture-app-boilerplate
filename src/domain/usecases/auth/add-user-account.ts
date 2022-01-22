@@ -35,6 +35,7 @@ export const setupAddUserAccount: Setup = (userAccountRepo, userTokenRepo, env, 
       file: registerUserTemplate,
       variables: {
         email,
+        appName: env.appName,
         link: `${String(env.frontendUrl)}/confirm-registration?token=${String(registerToken)}`
       }
     }

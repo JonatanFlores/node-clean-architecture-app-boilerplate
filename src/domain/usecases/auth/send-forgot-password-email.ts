@@ -28,6 +28,7 @@ export const setupSendForgotPasswordEmail: Setup = (userAccount, userToken, env,
         file: forgotPasswordTemplate,
         variables: {
           email,
+          appName: env.appName,
           link: `${String(env.frontendUrl)}/reset-password?token=${token}`
         }
       }

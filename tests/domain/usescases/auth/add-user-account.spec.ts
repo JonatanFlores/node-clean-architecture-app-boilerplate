@@ -125,6 +125,7 @@ describe('AddUserAccount', () => {
         file: 'any_file_path',
         variables: {
           email,
+          appName: 'AppName',
           link: `${String(env.frontendUrl)}/confirm-registration?token=registration_token`
         }
       }
