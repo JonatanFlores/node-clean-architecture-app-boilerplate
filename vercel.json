@@ -19,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/dist/main/index.js"
     }
   ]
 }
