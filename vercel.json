@@ -1,7 +1,7 @@
 {
   "name": "node-clean-architecture-app-boilerplate",
   "version": 2,
-  "public": true,
+  "outputDirectory": "dist",
   "builds": [
     {
       "src": "./dist/main/index.js",
