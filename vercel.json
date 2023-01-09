@@ -1,11 +1,11 @@
 {
   "name": "node-clean-architecture-app-boilerplate",
   "version": 2,
-  "outputDirectory": "dist",
   "builds": [
     {
-      "src": "./dist/main/index.js",
-      "use": "@vercel/node"
+      "src": "dist/main/index.js",
+      "use": "@vercel/node",
+      "config": { "includeFiles": ["dist/**"] }
     }
   ],
   "routes": [
@@ -19,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/main/index.js"
+      "dest": "dist/main/index.js"
     }
   ]
 }
