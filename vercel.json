@@ -1,0 +1,25 @@
+{
+  "name": "node-clean-architecture-app-boilerplate",
+  "version": 2,
+  "public": true,
+  "builds": [
+    {
+      "src": "src/main/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/robots.txt",
+      "status": 204
+    },
+    {
+      "src": "/favicon.ico",
+      "status": 204
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/src/main/index.ts"
+    }
+  ]
+}
