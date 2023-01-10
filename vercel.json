@@ -1,15 +1,17 @@
 {
+  "name": "node-clean-architecture-app-boilerplate",
   "version": 2,
+  "public": true,
   "builds": [
     {
-      "src": "./dist/main/api/index.js",
-      "use": "@now/node"
+      "src": "src/main/api/index.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "./dist/main/api/index.js"
+      "dest": "src/main/api/index.ts"
     }
   ]
 }
