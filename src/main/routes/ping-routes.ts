@@ -5,5 +5,5 @@ import { Router } from 'express'
 
 export default (router: Router): void => {
   router.get('/', (_, response) => response.json({ message: 'Welcome to our api' }))
-  router.get('/api/ping', adapt(makePingController()))
+  router.get('/ping', adapt(makePingController()))
 }
