@@ -2,7 +2,7 @@
   "name": "express-boilerplate",
   "version": "0.0.1",
   "description": "Express and Jest boilerplate",
-  "main": "./dist/main/index.js",
+  "main": "./dist/main/api",
   "engines": {
     "node": "16.x"
   },
@@ -17,8 +17,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "node -r dotenv/config dist/main",
-    "dev": "ts-node-dev --respawn --transpile-only --clear -r dotenv/config --inspect=0.0.0.0:9229 src/main",
+    "start": "node -r dotenv/config dist/main/api",
+    "dev": "ts-node-dev --respawn --transpile-only --clear -r dotenv/config --inspect=0.0.0.0:9229 src/main/api",
     "clean": "rimraf dist",
     "build": "npm run clean && tsc -p tsconfig-build.json",
     "prepare": "husky install",
